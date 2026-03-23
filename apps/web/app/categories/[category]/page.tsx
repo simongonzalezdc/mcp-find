@@ -3,6 +3,7 @@ import { generateCategoryMetadata, generateCategoryJsonLd } from '@/lib/metadata
 import { CATEGORIES, CATEGORY_LABELS } from '@mcpfind/shared';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export function generateStaticParams() {
   // Skip pre-building static category pages when Supabase credentials are absent (e.g., CI).
@@ -52,9 +53,9 @@ export default async function CategoryPage({
       <div className="grid gap-4 mt-8">
         {servers.map((server) => (
           <div key={server.id} className="border p-4 rounded">
-            <a href={`/servers/${server.slug}`} className="text-lg font-semibold hover:underline">
+            <Link href={`/servers/${server.slug}`} className="text-lg font-semibold hover:underline">
               {server.name}
-            </a>
+            </Link>
             <p className="text-gray-600 text-sm mt-1">{server.description}</p>
             <div className="flex gap-4 mt-2 text-xs text-gray-500">
               <span>&#9733; {server.github_stars}</span>

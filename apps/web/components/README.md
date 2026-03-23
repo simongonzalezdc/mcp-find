@@ -239,6 +239,17 @@ export default function CopyButton({ text, label = 'Copy' }: CopyButtonProps) { 
 
 ---
 
+## 9. Pagination
+
+- **Type**: Client Component (`"use client"`)
+- **Props**:
+  - `currentPage: number`
+  - `totalPages: number`
+- **Behavior**: Uses `<Link>` from `next/link` to generate page links. Updates `?page=N` URL param. Shows prev/next buttons and page numbers. Disables prev on page 1, next on last page.
+- **Design**: Horizontal button group, current page highlighted.
+
+---
+
 ## Component Dependency Graph
 
 ```

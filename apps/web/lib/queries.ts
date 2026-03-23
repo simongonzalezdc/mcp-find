@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { supabase } from './supabase';
 import type { Server, ServerWithTools, ServerListParams, ServerListResponse } from '@mcpfind/shared';
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@mcpfind/shared';
@@ -81,7 +82,7 @@ export async function getTopServers(limit: number): Promise<Server[]> {
   return (data || []) as Server[];
 }
 
-export async function getServersByCategory(category: string): Promise<Server[]> {
+export const getServersByCategory = cache(async (category: string): Promise<Server[]> => {
   const { data } = await supabase
     .from('servers')
     .select('*')
@@ -90,7 +91,7 @@ export async function getServersByCategory(category: string): Promise<Server[]> 
     .order('github_stars', { ascending: false })
     .limit(200);
   return (data || []) as Server[];
-}
+});
 
 export async function getLastSyncTime(): Promise<string | null> {
   const { data } = await supabase

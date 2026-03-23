@@ -1,6 +1,7 @@
 import { listServers } from '@/lib/queries';
 import { SITE_NAME } from '@mcpfind/shared';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: `Browse MCP Servers | ${SITE_NAME}`,
@@ -33,9 +34,9 @@ export default async function ServersPage({
       <div className="grid gap-4">
         {result.servers.map((server) => (
           <div key={server.id} className="border p-4 rounded">
-            <a href={`/servers/${server.slug}`} className="text-lg font-semibold hover:underline">
+            <Link href={`/servers/${server.slug}`} className="text-lg font-semibold hover:underline">
               {server.name}
-            </a>
+            </Link>
             <p className="text-gray-600 text-sm mt-1">{server.description}</p>
             <div className="flex gap-4 mt-2 text-xs text-gray-500">
               <span>&#9733; {server.github_stars}</span>

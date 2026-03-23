@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
+import { SITE_NAME } from '@mcpfind/shared';
 
 export const metadata: Metadata = {
-  title: 'Submit a Server | MCP Find',
+  title: `Submit a Server | ${SITE_NAME}`,
   description: 'Submit your MCP server to the MCP Find directory.',
 };
 
