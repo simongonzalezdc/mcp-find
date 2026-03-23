@@ -1,0 +1,93 @@
+import type { Server, ServerWithTools } from '@mcpfind/shared';
+import { SITE_NAME, SITE_URL } from '@mcpfind/shared';
+import type { Metadata } from 'next';
+
+export function generateServerJsonLd(server: ServerWithTools): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: server.name,
+    description: server.description || '',
+    url: `${SITE_URL}/servers/${server.slug}`,
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: ['Windows', 'macOS', 'Linux'],
+    version: server.version || undefined,
+    downloadUrl: server.package_url || undefined,
+    license: server.github_license
+      ? `https://spdx.org/licenses/${server.github_license}`
+      : undefined,
+    dateModified: server.github_last_push || server.updated_at,
+    creator: server.github_url
+      ? { '@type': 'Organization', url: server.github_url }
+      : undefined,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+  };
+}
+
+export function generateCategoryJsonLd(
+  category: string,
+  categoryLabel: string,
+  servers: Server[]
+): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${categoryLabel} MCP Servers`,
+    description: `Browse ${servers.length}+ ${categoryLabel.toLowerCase()} MCP servers with instant install configs.`,
+    url: `${SITE_URL}/categories/${category}`,
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: servers.length,
+      itemListElement: servers.slice(0, 50).map((s, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${SITE_URL}/servers/${s.slug}`,
+        name: s.name,
+      })),
+    },
+  };
+}
+
+export function generateServerMetadata(server: ServerWithTools): Metadata {
+  const title = `${server.name} — MCP Server for ${server.category || 'Tools'}`;
+  const description = `Install ${server.name} in Claude Desktop, Cursor, or VS Code. ${(server.description || '').slice(0, 100)}. ${server.github_stars}+ GitHub stars. Open source.`.slice(0, 160);
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${SITE_URL}/servers/${server.slug}`,
+      siteName: SITE_NAME,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+    alternates: {
+      canonical: `${SITE_URL}/servers/${server.slug}`,
+    },
+  };
+}
+
+export function generateCategoryMetadata(
+  category: string,
+  categoryLabel: string,
+  count: number
+): Metadata {
+  const title = `${categoryLabel} MCP Servers`;
+  const description = `Browse ${count}+ ${categoryLabel.toLowerCase()} MCP servers. Get instant install configs for Claude Desktop, Cursor, VS Code, and Windsurf.`.slice(0, 160);
+  return {
+    title,
+    description,
+    openGraph: { title, description, url: `${SITE_URL}/categories/${category}`, siteName: SITE_NAME, type: 'website' },
+    twitter: { card: 'summary_large_image', title, description },
+    alternates: { canonical: `${SITE_URL}/categories/${category}` },
+  };
+}
