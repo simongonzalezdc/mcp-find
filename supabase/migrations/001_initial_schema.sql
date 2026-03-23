@@ -68,7 +68,6 @@ ALTER TABLE servers ADD COLUMN search_vector tsvector
 -- Indexes
 CREATE INDEX idx_servers_category ON servers(category);
 CREATE INDEX idx_servers_github_stars ON servers(github_stars DESC);
-CREATE INDEX idx_servers_slug ON servers(slug);
 CREATE INDEX idx_servers_source ON servers(source);
 CREATE INDEX idx_servers_registry_status ON servers(registry_status);
 CREATE INDEX idx_servers_search ON servers USING GIN(search_vector);

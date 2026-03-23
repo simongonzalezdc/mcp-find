@@ -69,7 +69,7 @@ export async function syncFromRegistry(supabase: SupabaseClient<any, any, any>):
         tool_count: Array.isArray(capabilities.tools) ? capabilities.tools.length : 0,
         github_url: githubUrl,
         is_official: isOfficial(packageName),
-        registry_status: server._meta?.status || 'active',
+        registry_status: (['active', 'deprecated'] as const).includes(server._meta?.status) ? server._meta.status : 'active',
         registry_published_at: server._meta?.publishedAt || null,
         registry_updated_at: server._meta?.updatedAt || null,
         registry_tags: server._meta?.tags || [],
@@ -94,9 +94,17 @@ export async function syncFromRegistry(supabase: SupabaseClient<any, any, any>):
 
 function detectPackageType(pkg: any): string | null {
   if (!pkg) return null;
-  if (pkg.registry_url?.includes('npmjs.com') || pkg.name?.startsWith('@')) return 'npm';
-  if (pkg.registry_url?.includes('pypi.org')) return 'pypi';
-  if (pkg.registry_url?.includes('docker') || pkg.name?.includes('/')) return 'docker';
+  const url = pkg.registry_url || '';
+  const name = pkg.name || '';
+  // Check registry URL first (most reliable)
+  if (url.includes('npmjs.com') || url.includes('npm')) return 'npm';
+  if (url.includes('pypi.org')) return 'pypi';
+  if (url.includes('docker') || url.includes('ghcr.io') || url.includes('gcr.io')) return 'docker';
+  // Fallback to name heuristics
+  if (name.startsWith('@') || name.includes('npm')) return 'npm';
+  if (name.includes('pypi') || name.includes('pip')) return 'pypi';
+  // Only match docker if name contains docker-specific patterns (not just /)
+  if (name.includes('docker') || (name.includes('/') && !name.startsWith('@'))) return 'docker';
   return 'other';
 }
 
