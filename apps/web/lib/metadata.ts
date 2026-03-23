@@ -1,5 +1,5 @@
 import type { Server, ServerWithTools } from '@mcpfind/shared';
-import { SITE_NAME, SITE_URL } from '@mcpfind/shared';
+import { SITE_NAME, SITE_URL, CATEGORY_LABELS } from '@mcpfind/shared';
 import type { Metadata } from 'next';
 
 export function generateServerJsonLd(server: ServerWithTools): object {
@@ -53,7 +53,8 @@ export function generateCategoryJsonLd(
 }
 
 export function generateServerMetadata(server: ServerWithTools): Metadata {
-  const title = `${server.name} — MCP Server for ${server.category || 'Tools'}`;
+  const categoryLabel = server.category ? (CATEGORY_LABELS[server.category as keyof typeof CATEGORY_LABELS] || server.category) : 'Developer Tools';
+  const title = `${server.name} — MCP Server for ${categoryLabel}`;
   const description = `Install ${server.name} in Claude Desktop, Cursor, or VS Code. ${(server.description || '').slice(0, 100)}. ${server.github_stars}+ GitHub stars. Open source.`.slice(0, 160);
   return {
     title,

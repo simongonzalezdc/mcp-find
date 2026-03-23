@@ -14,3 +14,12 @@ User-agent: Google-Extended
 Allow: /
 
 Sitemap: https://mcpfind.org/sitemap.xml
+
+# AI-readable content index
+# llms.txt: https://mcpfind.org/llms.txt
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: AppleBot-Extended
+Allow: /

@@ -3,7 +3,6 @@ import { getServerCount, getTopServers } from '@/lib/queries';
 import { SITE_NAME, SITE_URL, CATEGORY_LABELS } from '@mcpfind/shared';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 86400; // 24 hours
 
 export async function GET() {
   const [count, topServers] = await Promise.all([
@@ -31,8 +30,8 @@ ${categoryLines}
 
 ## API
 - [Server List API](${SITE_URL}/api/servers): JSON API for searching and filtering all MCP servers with full-text search
-- [Server Detail API](${SITE_URL}/api/servers/{slug}): Full metadata, tools, schemas, and install configs per server
-- [Config Generator API](${SITE_URL}/api/servers/{slug}/config/{client}): Generate install config for any MCP client
+- [Server Detail API](${SITE_URL}/api/servers/postgres-mcp): Full metadata, tools, schemas, and install configs per server
+- [Config Generator API](${SITE_URL}/api/servers/postgres-mcp/config/claude-desktop): Generate install config for any MCP client
 
 ## Top Servers
 ${topServerLines}

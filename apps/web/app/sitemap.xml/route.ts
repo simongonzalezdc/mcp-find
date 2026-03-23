@@ -2,14 +2,14 @@ import { getTopServers } from '@/lib/queries';
 import { SITE_URL, CATEGORIES } from '@mcpfind/shared';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 86400;
 
 export async function GET() {
   const servers = await getTopServers(5000); // Get all servers
 
+  const today = new Date().toISOString().split('T')[0];
   const staticPages = [
-    { url: SITE_URL, changefreq: 'daily', priority: '1.0' },
-    { url: `${SITE_URL}/servers`, changefreq: 'daily', priority: '0.9' },
+    { url: SITE_URL, changefreq: 'daily', priority: '1.0', lastmod: today },
+    { url: `${SITE_URL}/servers`, changefreq: 'daily', priority: '0.9', lastmod: today },
   ];
 
   const categoryPages = CATEGORIES.map(cat => ({

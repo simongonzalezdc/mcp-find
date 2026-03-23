@@ -5,6 +5,23 @@ export default function Home() {
       <p className="mt-4 text-lg text-gray-600">
         The open-source way to find MCP servers.
       </p>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'MCP Find',
+            url: 'https://mcpfind.org',
+            description: 'Open-source directory of MCP servers. AI-agent optimized.',
+            publisher: {
+              '@type': 'Organization',
+              name: 'MCP Find',
+              url: 'https://mcpfind.org',
+            },
+          }),
+        }}
+      />
     </main>
   );
 }

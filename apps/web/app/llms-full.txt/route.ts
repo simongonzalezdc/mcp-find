@@ -3,7 +3,6 @@ import { getServerCount, getServersByCategory } from '@/lib/queries';
 import { SITE_NAME, SITE_URL, CATEGORIES, CATEGORY_LABELS } from '@mcpfind/shared';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 86400;
 
 export async function GET() {
   const count = await getServerCount();
@@ -20,7 +19,7 @@ export async function GET() {
     for (const s of servers) {
       content += `### [${s.name}](${SITE_URL}/servers/${s.slug})\n`;
       content += `${s.description || 'No description.'}\n`;
-      content += `Stars: ${s.github_stars} | License: ${s.github_license || 'Unknown'} | Package: ${s.package_type || 'Unknown'}\n\n`;
+      content += `- Stars: ${s.github_stars}\n- License: ${s.github_license || 'Unknown'}\n- Package: ${s.package_type || 'Unknown'}\n\n`;
     }
   }
 
