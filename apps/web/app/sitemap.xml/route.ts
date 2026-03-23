@@ -16,6 +16,7 @@ export async function GET() {
     url: `${SITE_URL}/categories/${cat}`,
     changefreq: 'daily' as const,
     priority: '0.8',
+    lastmod: today,
   }));
 
   const serverPages = servers.map(s => ({

@@ -29,7 +29,8 @@ export async function GET() {
     content += `## Other\n\n`;
     for (const s of otherServers) {
       content += `### [${s.name}](${SITE_URL}/servers/${s.slug})\n`;
-      content += `${s.description || 'No description.'}\n\n`;
+      content += `${s.description || 'No description.'}\n`;
+      content += `- Stars: ${s.github_stars}\n- License: ${s.github_license || 'Unknown'}\n- Package: ${s.package_type || 'Unknown'}\n\n`;
     }
   }
 

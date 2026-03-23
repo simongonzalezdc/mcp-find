@@ -13,7 +13,7 @@ export default function Home() {
             '@type': 'WebSite',
             name: 'MCP Find',
             url: 'https://mcpfind.org',
-            description: 'Open-source directory of MCP servers. AI-agent optimized.',
+            description: 'Open-source directory of MCP servers. AI-agent optimized. Get instant install configs for Claude Desktop, Cursor, VS Code, Windsurf, and Claude Code.',
             publisher: {
               '@type': 'Organization',
               name: 'MCP Find',
