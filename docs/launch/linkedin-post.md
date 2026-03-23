@@ -23,8 +23,8 @@ User reviews, install tracking, a CLI, curated collections. Week one is about ge
 
 Giving ourselves only a week was the best decision. You can't overthink when the clock's running out.
 
-Live: https://mcpfind.com
-Repo: https://github.com/[your-handle]/mcp-find
+Live: https://mcpfind.org
+Repo: https://github.com/gusmar2017/mcp-find
 
 If you've used MCP servers and have opinions on what every directory gets wrong, I want to hear it. DMs open.
 

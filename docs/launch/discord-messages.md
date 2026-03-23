@@ -18,8 +18,8 @@ Hey everyone — my co-founder and I just shipped MCP Find, an open-source direc
 
 It's a v1 built in a week so there's definitely rough edges. Would really appreciate feedback from people who use MCP servers regularly — especially if something's broken or a server you care about is missing/wrong.
 
-Live: https://mcpfind.com
-Repo: https://github.com/[your-handle]/mcp-find
+Live: https://mcpfind.org
+Repo: https://github.com/gusmar2017/mcp-find
 
 ---
 
@@ -35,7 +35,7 @@ Main thing on our v2 list right now is a CLI (`npx mcp-find install <name>`) —
 
 Built something this week that might be useful here.
 
-MCP Find — open-source directory for Model Context Protocol servers: https://mcpfind.com
+MCP Find — open-source directory for Model Context Protocol servers: https://mcpfind.org
 
 [SCREENSHOT: Homepage]
 
@@ -43,7 +43,7 @@ The quick pitch: 2,000+ MCP servers exist, finding the right one is still a pain
 
 The part I'm most happy with: the config generator. You pick a server and your AI client, and it outputs the exact JSON config. Sounds small but it saves real time when you're setting things up.
 
-Repo if you want to poke at the code or contribute: https://github.com/[your-handle]/mcp-find
+Repo if you want to poke at the code or contribute: https://github.com/gusmar2017/mcp-find
 
 What would you want from an MCP directory that doesn't exist yet?
 
@@ -53,7 +53,7 @@ What would you want from an MCP directory that doesn't exist yet?
 
 Shipped MCP Find this week — open-source MCP server directory with a config generator.
 
-https://mcpfind.com
+https://mcpfind.org
 
 Week-long build with my co-founder. The two things I'd highlight:
 

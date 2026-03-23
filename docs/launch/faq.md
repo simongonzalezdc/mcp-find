@@ -82,7 +82,7 @@ We shipped v1 in a week. This list is what v2 is for.
 
 ## Can I contribute?
 
-Yes. The repo is at https://github.com/[your-handle]/mcp-find and CONTRIBUTING.md has setup instructions.
+Yes. The repo is at https://github.com/gusmar2017/mcp-find and CONTRIBUTING.md has setup instructions.
 
 Most useful contributions right now:
 1. Data corrections — wrong categories, missing or inaccurate descriptions

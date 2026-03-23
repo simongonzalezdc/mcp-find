@@ -12,7 +12,7 @@ Show HN: MCP Find – Open-source, AI-optimized MCP server directory
 
 We're two devs (Gus and Adam) who gave ourselves one week to build something useful for the MCP ecosystem.
 
-MCP Find is an open-source directory of Model Context Protocol servers. There are 2,000+ servers in the official registry but finding the right one and actually installing it is still painful. The existing directories (Glama, PulseMCP, mcp.so, Smithery) are all closed source.
+MCP Find is an open-source directory of Model Context Protocol servers. There are 2,000+ servers in the official registry but finding the right one and actually installing it is still painful. The existing directories (Glama, PulseMCP, mcp.so, Smithery — a deployment platform, not a directory) are all closed source.
 
 What we built differently:
 
@@ -26,8 +26,8 @@ What we built differently:
 
 Stack: Next.js App Router, Supabase, Vercel. Data from the official MCP registry API, enriched with GitHub metadata via their API.
 
-Repo: https://github.com/[your-handle]/mcp-find
-Live: https://mcpfind.com
+Repo: https://github.com/gusmar2017/mcp-find
+Live: https://mcpfind.org
 
 Would appreciate any feedback — especially from people who have tried other MCP directories and have opinions on what's missing.
 

@@ -20,7 +20,7 @@ The official registry is a YAML file.
 
 The other directories are closed source.
 
-My co-founder @[adam-handle] and I gave ourselves one week to build something the community could actually own.
+My co-founder @TBD_ADAM and I gave ourselves one week to build something the community could actually own.
 
 ---
 
@@ -65,13 +65,13 @@ Stack if you're curious:
 
 Data from the official MCP registry, enriched with GitHub API metadata.
 
-Repo: https://github.com/[your-handle]/mcp-find
+Repo: https://github.com/gusmar2017/mcp-find
 
 ---
 
 ## Tweet 7
 
-Live at https://mcpfind.com
+Live at https://mcpfind.org
 
 It's a week-old v1. There's a lot we didn't build yet (reviews, CLI, collections).
 

@@ -21,9 +21,9 @@ The problem we kept running into: the official registry is a YAML file with 2,00
 
 **Tech side:** Next.js App Router, Supabase for the DB, Vercel deployment. We pull from the official registry API and enrich with GitHub metadata.
 
-**Open source MIT:** https://github.com/[your-handle]/mcp-find
+**Open source MIT:** https://github.com/gusmar2017/mcp-find
 
-Live at: https://mcpfind.com
+Live at: https://mcpfind.org
 
 Would love feedback from people who use MCP servers daily. What's missing from every directory you've tried?
 
@@ -39,9 +39,9 @@ MCP Find is a directory we built that includes a config generator: you pick a se
 
 We also surface GitHub metadata — stars, last commit, open issues — so you can tell if a server is actually maintained before you add it to your config.
 
-It's open source (MIT): https://github.com/[your-handle]/mcp-find
+It's open source (MIT): https://github.com/gusmar2017/mcp-find
 
-Live: https://mcpfind.com
+Live: https://mcpfind.org
 
 Happy to answer questions about how we built it or take feature requests.
 
@@ -70,8 +70,8 @@ Happy to answer questions about how we built it or take feature requests.
 
 The week constraint forced us to cut ruthlessly. It's a clean v1 that does a few things well rather than many things mediocrely.
 
-Repo: https://github.com/[your-handle]/mcp-find
-Live: https://mcpfind.com
+Repo: https://github.com/gusmar2017/mcp-find
+Live: https://mcpfind.org
 
 Always curious what other people do with hard time constraints — did you find they help or hurt quality?
 
@@ -104,7 +104,7 @@ The most valuable contributions right now:
 
 CONTRIBUTING.md is in the repo with setup instructions. The local dev setup is `pnpm install && pnpm dev` — nothing exotic.
 
-Repo: https://github.com/[your-handle]/mcp-find
-Live: https://mcpfind.com
+Repo: https://github.com/gusmar2017/mcp-find
+Live: https://mcpfind.org
 
 License: MIT. Fork freely.
