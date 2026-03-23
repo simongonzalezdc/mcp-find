@@ -87,7 +87,8 @@ export async function getServersByCategory(category: string): Promise<Server[]> 
     .select('*')
     .eq('category', category)
     .eq('registry_status', 'active')
-    .order('github_stars', { ascending: false });
+    .order('github_stars', { ascending: false })
+    .limit(200);
   return (data || []) as Server[];
 }
 

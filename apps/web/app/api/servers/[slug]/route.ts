@@ -6,6 +6,11 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
+
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+    return NextResponse.json({ error: 'Invalid slug format' }, { status: 400 });
+  }
+
   const server = await getServerBySlug(slug);
   if (!server) {
     return NextResponse.json({ error: 'Server not found' }, { status: 404 });

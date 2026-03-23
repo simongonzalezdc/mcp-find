@@ -21,6 +21,7 @@ function buildCommand(packageName: string, packageType: PackageType, additionalA
     case 'docker':
       return { command: 'docker', args: ['run', '-i', '--rm', packageName, ...additionalArgs] };
     default:
+      console.warn(`Unknown package type: ${packageType}, defaulting to npm`);
       return { command: 'npx', args: ['-y', packageName, ...additionalArgs] };
   }
 }

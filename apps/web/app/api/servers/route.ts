@@ -11,6 +11,11 @@ export async function GET(request: NextRequest) {
   const sort = (searchParams.get('sort') || 'stars') as SortOption;
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '24', 10);
+
+  if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+    return NextResponse.json({ error: 'Invalid page or limit' }, { status: 400 });
+  }
+
   const status = (searchParams.get('status') || 'active') as 'active' | 'deprecated';
 
   // Validate category

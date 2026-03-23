@@ -1,31 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// NOTE: This rate limiter is in-memory and only effective on a single process.
+// On free-tier Vercel (serverless), each function invocation may run in a
+// separate process, so this provides best-effort rate limiting only.
 const rateMap = new Map<string, { count: number; resetAt: number }>();
 const LIMIT = 100;
 const WINDOW_MS = 60_000;
 
-// Cleanup stale entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of rateMap) {
-    if (value.resetAt < now) rateMap.delete(key);
+function getClientIp(request: NextRequest): string {
+  // Vercel provides request.ip; fallback to rightmost x-forwarded-for (proxy-appended)
+  if (request.ip) return request.ip;
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const parts = forwarded.split(',');
+    return parts[parts.length - 1]!.trim();
   }
-}, 5 * 60_000);
+  return 'unknown';
+}
 
 export function middleware(request: NextRequest) {
-  // Only rate limit API routes
   if (!request.nextUrl.pathname.startsWith('/api/')) {
     return NextResponse.next();
   }
 
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-    || request.headers.get('x-real-ip')
-    || 'unknown';
-
+  const ip = getClientIp(request);
   const now = Date.now();
   const entry = rateMap.get(ip);
 
   if (!entry || entry.resetAt < now) {
+    // Lazy eviction: stale entry is replaced
     rateMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
     return NextResponse.next();
   }
@@ -35,16 +38,11 @@ export function middleware(request: NextRequest) {
     const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
     return NextResponse.json(
       { error: 'Rate limited. Please wait before making more requests.', retryAfter },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(retryAfter) },
-      }
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } }
     );
   }
 
   return NextResponse.next();
 }
 
-export const config = {
-  matcher: '/api/:path*',
-};
+export const config = { matcher: '/api/:path*' };

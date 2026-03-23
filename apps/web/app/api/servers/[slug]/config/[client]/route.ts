@@ -11,6 +11,10 @@ export async function GET(
 ) {
   const { slug, client } = await params;
 
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+    return NextResponse.json({ error: 'Invalid slug format' }, { status: 400 });
+  }
+
   if (!VALID_CLIENTS.includes(client as ClientType)) {
     return NextResponse.json({ error: 'Invalid client' }, { status: 400 });
   }
