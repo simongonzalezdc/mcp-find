@@ -4,9 +4,14 @@ on:
     paths:
       - 'community-servers.yml'
 
+concurrency:
+  group: validate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       pull-requests: write
     steps:
@@ -15,7 +20,7 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install yaml
+        run: npm install yaml@2.7.0
       - name: Validate submission
         uses: actions/github-script@v7
         with:
@@ -38,8 +43,10 @@ jobs:
                 if (!server.github_url) errors.push(`${prefix}: missing \`github_url\``);
                 if (!server.package_name) errors.push(`${prefix}: missing \`package_name\``);
                 if (!server.description) errors.push(`${prefix}: missing \`description\``);
-                if (server.github_url && !server.github_url.startsWith('https://github.com/'))
-                  errors.push(`${prefix}: \`github_url\` must start with https://github.com/`);
+                if (server.github_url && !/^https:\/\/github\.com\/[^\/]+\/[^\/]+/.test(server.github_url))
+                  errors.push(`${prefix}: \`github_url\` must be a valid GitHub repo URL (https://github.com/owner/repo)`);
+                if (server.description && server.description.length < 20)
+                  errors.push(`${prefix}: \`description\` must be at least 20 characters`);
                 if (server.package_type && !VALID_PACKAGE_TYPES.includes(server.package_type))
                   errors.push(`${prefix}: invalid \`package_type\` — must be npm, pypi, or docker`);
                 if (server.category && !VALID_CATEGORIES.includes(server.category))
