@@ -1,4 +1,4 @@
-import type { Server, ServerWithTools, ServerListResponse, ConfigOutput, ClientType, Category, SortOption } from '@mcpfind/shared';
+import type { Server, ServerListItem, ServerWithTools, ServerListResponse, ConfigOutput, ClientType, Category, SortOption } from '@mcpfind/shared';
 
 const DEFAULT_API_URL = 'https://mcpfind.org/api';
 
@@ -11,7 +11,7 @@ export async function searchServers(params: {
   category?: Category;
   sort_by?: SortOption;
   limit?: number;
-}): Promise<Server[]> {
+}): Promise<ServerListItem[]> {
   const url = new URL(`${getApiUrl()}/servers`);
   url.searchParams.set('q', params.query);
   if (params.category !== undefined) url.searchParams.set('category', params.category);

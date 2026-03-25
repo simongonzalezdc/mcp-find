@@ -98,7 +98,7 @@ export async function syncFromRegistry(supabase: SupabaseClient<any, any, any>):
   return totalSynced;
 }
 
-function detectPackageType(pkg: any): string | null {
+function detectPackageType(pkg: any): 'npm' | 'pypi' | 'docker' | 'other' | null {
   if (!pkg) return null;
   const url = pkg.registry_url || '';
   const name = pkg.name || '';
