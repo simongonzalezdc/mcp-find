@@ -11,3 +11,5 @@ dist/
 .env.*
 coverage/
 supabase/.temp/
+logs/
+.claude/
