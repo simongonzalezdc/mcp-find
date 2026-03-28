@@ -12,11 +12,19 @@
   "dependencies": {
     "@mcpfind/shared": "workspace:*",
     "@supabase/supabase-js": "^2.100.0",
+    "@tabler/icons-react": "^3.40.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.6.0",
+    "motion": "^12.38.0",
     "next": "^14",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
