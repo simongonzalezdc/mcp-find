@@ -57,7 +57,7 @@ export function ServerCard({ server, className }: ServerCardProps) {
       </div>
 
       {/* Header */}
-      <div className="flex items-start gap-3 pr-24 mb-3">
+      <div className="flex items-center gap-3 pr-24 mb-3">
         {avatarUrl ? (
           <Image
             src={avatarUrl}
@@ -72,11 +72,9 @@ export function ServerCard({ server, className }: ServerCardProps) {
             <IconServer size={16} className="text-neutral-500" />
           </div>
         )}
-        <div className="min-w-0">
-          <h3 className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors duration-200">
-            {server.name}
-          </h3>
-        </div>
+        <h3 className="text-white font-semibold text-base group-hover:text-blue-300 transition-colors duration-200">
+          {server.name}
+        </h3>
       </div>
 
       {/* Repo & Stars row */}

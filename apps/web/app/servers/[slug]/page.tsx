@@ -371,8 +371,8 @@ export default async function ServerDetailPage({
             {/* Author */}
             {server.github_url && (() => {
               const authorPath = server.github_url.replace("https://github.com/", "");
-              const authorOrg = authorPath.split("/")[0];
-              const firstLetter = authorOrg.charAt(0).toUpperCase();
+              const authorOrg = authorPath.split("/")[0] ?? "";
+              const firstLetter = authorOrg.charAt(0)?.toUpperCase() ?? "";
               const statusLabel = server.is_official
                 ? "Official"
                 : server.source === "registry"
