@@ -11,3 +11,6 @@ dist/
 .env.*
 coverage/
 supabase/.temp/
+logs/
+.claude/
+mcp-hub/
