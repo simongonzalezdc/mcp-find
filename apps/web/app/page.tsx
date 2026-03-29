@@ -178,7 +178,7 @@ export default async function HomePage() {
               <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4">
                 <IconSearch size={20} className="text-blue-400" />
               </div>
-              <h3 className="font-bold text-neutral-200 mb-2">Discover 500+ MCP Servers</h3>
+              <h3 className="font-bold text-neutral-200 mb-2">Discover {serverCount > 0 ? `${serverCount.toLocaleString()}+` : "Thousands of"} MCP Servers</h3>
               <p className="text-neutral-400 text-sm leading-relaxed">
                 Browse a curated directory of official and community-built MCP servers across databases, developer tools, cloud services, and more. Filter by language, transport type, and category.
               </p>
