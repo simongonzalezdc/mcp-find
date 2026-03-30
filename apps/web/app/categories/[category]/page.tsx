@@ -1,11 +1,13 @@
 import { getServersByCategory } from '@/lib/queries';
 import { generateCategoryMetadata, generateCategoryJsonLd } from '@/lib/metadata';
 import { safeJsonLd } from '@/lib/json-ld';
-import { CATEGORIES, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS } from '@mcpfind/shared';
+import { CATEGORIES, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS, CATEGORY_FAQS } from '@mcpfind/shared';
 import type { Category } from '@mcpfind/shared';
+import { CategoryFaq } from '@/components/ui/category-faq';
+import { ServerCard } from '@/components/ui/server-card';
+import { Navbar } from '@/components/ui/navbar';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 
 export function generateStaticParams() {
   // Skip pre-building static category pages when Supabase credentials are absent (e.g., CI).
@@ -40,33 +42,40 @@ export default async function CategoryPage({
   const servers = await getServersByCategory(category);
 
   return (
-    <main className="min-h-screen p-8">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd(generateCategoryJsonLd(category, label, servers)),
-        }}
-      />
+    <div className="min-h-screen bg-black text-white">
+      <Navbar variant="sticky" />
 
-      <h1 className="text-3xl font-bold">{label} MCP Servers</h1>
-      <p className="text-gray-600 mt-2 max-w-2xl">{CATEGORY_DESCRIPTIONS[category as Category]}</p>
-      <p className="text-gray-600 mt-2">{servers.length} servers in this category</p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-12">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: safeJsonLd(generateCategoryJsonLd(category, label, servers)),
+          }}
+        />
 
-      {/* TODO: Adam — Reuse ServerCard grid from /servers page */}
-      <div className="grid gap-4 mt-8">
-        {servers.map((server) => (
-          <div key={server.id} className="border p-4 rounded">
-            <Link href={`/servers/${server.slug}`} className="text-lg font-semibold hover:underline">
-              {server.name}
-            </Link>
-            <p className="text-gray-600 text-sm mt-1">{server.description}</p>
-            <div className="flex gap-4 mt-2 text-xs text-gray-500">
-              <span>&#9733; {server.github_stars}</span>
-              <span>{server.github_license}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </main>
+        <div className="mb-10">
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400 mb-2">
+            {label} MCP Servers
+          </h1>
+          <p className="text-neutral-400 text-base max-w-2xl mb-2">
+            {CATEGORY_DESCRIPTIONS[category as Category]}
+          </p>
+          <p className="text-neutral-500 text-lg">
+            {servers.length} servers in this category
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {servers.map((server) => (
+            <ServerCard key={server.id} server={server} />
+          ))}
+        </div>
+
+        <CategoryFaq
+          categoryLabel={label}
+          faqs={CATEGORY_FAQS[category as Category] || []}
+        />
+      </main>
+    </div>
   );
 }

@@ -115,6 +115,22 @@ export const getServersByCategory = cache(async (category: string): Promise<Serv
   return (data || []) as ServerListItem[];
 });
 
+export async function getCategoryLastUpdated(): Promise<Record<string, string>> {
+  const { data } = await supabase
+    .from('servers')
+    .select('category, updated_at')
+    .eq('registry_status', 'active')
+    .order('updated_at', { ascending: false });
+
+  const result: Record<string, string> = {};
+  for (const row of data || []) {
+    if (row.category && !result[row.category]) {
+      result[row.category] = row.updated_at;
+    }
+  }
+  return result;
+}
+
 export async function getLastSyncTime(): Promise<string | null> {
   const { data } = await supabase
     .from('sync_log')

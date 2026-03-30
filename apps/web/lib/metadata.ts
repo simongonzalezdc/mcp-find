@@ -1,5 +1,5 @@
 import type { Server, ServerListItem, ServerWithTools } from '@mcpfind/shared';
-import { SITE_NAME, SITE_URL, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS } from '@mcpfind/shared';
+import { SITE_NAME, SITE_URL, CATEGORY_LABELS, CATEGORY_DESCRIPTIONS, CATEGORY_FAQS } from '@mcpfind/shared';
 import type { Category } from '@mcpfind/shared';
 import type { Metadata } from 'next';
 
@@ -34,6 +34,8 @@ export function generateCategoryJsonLd(
   categoryLabel: string,
   servers: ServerListItem[]
 ): object {
+  const faqs = CATEGORY_FAQS[category as Category] || [];
+
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -63,6 +65,17 @@ export function generateCategoryJsonLd(
           { '@type': 'ListItem', position: 3, name: `${categoryLabel} MCP Servers`, item: `${SITE_URL}/categories/${category}` },
         ],
       },
+      {
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(faq => ({
+          '@type': 'Question',
+          name: faq.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: faq.answer,
+          },
+        })),
+      },
     ],
   };
 }
@@ -80,6 +93,7 @@ export function generateServerMetadata(server: ServerWithTools): Metadata {
       url: `${SITE_URL}/servers/${server.slug}`,
       siteName: SITE_NAME,
       type: 'website',
+      images: [{ url: `${SITE_URL}/og-image-mcp.png`, width: 1200, height: 630, alt: server.name }],
     },
     twitter: {
       card: 'summary_large_image',
@@ -110,7 +124,7 @@ export function generateCategoryMetadata(
   return {
     title,
     description,
-    openGraph: { title, description, url: `${SITE_URL}/categories/${category}`, siteName: SITE_NAME, type: 'website' },
+    openGraph: { title, description, url: `${SITE_URL}/categories/${category}`, siteName: SITE_NAME, type: 'website', images: [{ url: `${SITE_URL}/og-image-mcp.png`, width: 1200, height: 630, alt: `${categoryLabel} MCP Servers` }] },
     twitter: { card: 'summary_large_image', title, description },
     alternates: { canonical: `${SITE_URL}/categories/${category}` },
   };

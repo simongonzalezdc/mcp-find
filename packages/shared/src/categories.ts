@@ -72,6 +72,235 @@ export const CATEGORY_KEYWORDS: Record<Category, string[]> = {
   other: [],
 };
 
+export const CATEGORY_FAQS: Record<Category, Array<{ question: string; answer: string }>> = {
+  databases: [
+    {
+      question: 'What database MCP servers are available?',
+      answer: 'MCP Find indexes PostgreSQL, MySQL, SQLite, MongoDB, Redis, Supabase, and other database integrations. Most support both read-only and read-write modes.',
+    },
+    {
+      question: 'How do I connect an AI agent to my database?',
+      answer: 'Install the MCP server for your database (e.g., postgres-mcp), add the config to your AI client (Claude Desktop, Cursor, VS Code), and the agent can query your database directly.',
+    },
+    {
+      question: 'Can MCP servers handle database migrations?',
+      answer: 'Some database MCP servers support schema introspection and migration generation. Check individual server docs for write capabilities — many default to read-only for safety.',
+    },
+  ],
+  cloud: [
+    {
+      question: 'Which cloud providers have MCP servers?',
+      answer: 'AWS, GCP, Azure, Cloudflare, Vercel, and Fly.io all have MCP server integrations for provisioning resources, querying logs, and managing deployments.',
+    },
+    {
+      question: 'Can I manage infrastructure with an AI agent through MCP?',
+      answer: 'Yes. Cloud MCP servers let agents list resources, read logs, trigger deploys, and in some cases provision new infrastructure — all through natural language in your AI client.',
+    },
+  ],
+  monitoring: [
+    {
+      question: 'What monitoring platforms have MCP servers?',
+      answer: 'Datadog, Grafana, Sentry, PagerDuty, New Relic, and Honeycomb all have MCP integrations. Agents can query metrics, check alert status, and pull error traces directly.',
+    },
+    {
+      question: 'Can an AI agent help with on-call workflows through MCP?',
+      answer: 'Monitoring MCP servers let agents inspect dashboards, read incident timelines, and correlate metrics across services — speeding up root-cause analysis during incidents.',
+    },
+  ],
+  security: [
+    {
+      question: 'What security and auth MCP servers exist?',
+      answer: 'There are MCP servers for Vault, Auth0, Okta, AWS Secrets Manager, and other identity and secrets platforms. They let agents audit access, rotate credentials, and check compliance posture.',
+    },
+    {
+      question: 'Is it safe to give an AI agent access to security tools?',
+      answer: 'Security MCP servers use scoped API keys and OAuth with minimal permissions. You control exactly what the agent can read or modify — most setups default to read-only access.',
+    },
+  ],
+  testing: [
+    {
+      question: 'Which testing frameworks have MCP servers?',
+      answer: 'Playwright, Cypress, Jest, Vitest, and Selenium all have MCP integrations. Agents can run test suites, interpret failures, and even generate new test cases.',
+    },
+    {
+      question: 'Can an AI agent write and run tests through MCP?',
+      answer: 'Yes. Testing MCP servers give agents access to test runners and results. Combined with code-editing tools, an agent can write tests, execute them, and iterate on failures.',
+    },
+  ],
+  analytics: [
+    {
+      question: 'What analytics platforms have MCP servers?',
+      answer: 'Google Analytics, Mixpanel, Amplitude, BigQuery, Metabase, and dbt all have MCP integrations. Agents can run queries, pull dashboards, and surface insights without manual scripting.',
+    },
+    {
+      question: 'Can an AI agent generate reports from my analytics data?',
+      answer: 'Analytics MCP servers feed structured data directly to the agent, which can summarize trends, compare time periods, and generate reports in natural language.',
+    },
+  ],
+  automation: [
+    {
+      question: 'What automation platforms have MCP servers?',
+      answer: 'Zapier, Make (formerly Integromat), n8n, and Pipedream all have MCP integrations. Agents can trigger workflows, check run status, and orchestrate multi-step automations.',
+    },
+    {
+      question: 'How do automation MCP servers differ from just using APIs?',
+      answer: 'Automation MCP servers let your agent trigger and manage existing workflows through natural language, without writing API calls. They bridge the gap between your agent and your automation stack.',
+    },
+  ],
+  media: [
+    {
+      question: 'What media and image MCP servers are available?',
+      answer: 'There are MCP servers for image generation (DALL-E, Stable Diffusion), video processing (FFmpeg), design tools (Figma, Canva), and screenshot capture. Agents can create, edit, and organize media assets.',
+    },
+    {
+      question: 'Can an AI agent edit images through MCP?',
+      answer: 'Media MCP servers support image generation, resizing, format conversion, and in some cases AI-powered editing. The agent handles the API calls while you describe what you want.',
+    },
+  ],
+  documentation: [
+    {
+      question: 'What documentation platforms have MCP servers?',
+      answer: 'Confluence, Gitbook, ReadMe, Mintlify, and Docusaurus all have MCP integrations. Agents can read, create, and update docs — useful for keeping documentation in sync with code.',
+    },
+    {
+      question: 'Can MCP servers help reduce documentation rot?',
+      answer: 'Documentation MCP servers let agents cross-reference code changes with existing docs and flag outdated content. Some teams use them to auto-generate changelogs and API references.',
+    },
+  ],
+  social: [
+    {
+      question: 'Which social media platforms have MCP servers?',
+      answer: 'Twitter/X, LinkedIn, Instagram, YouTube, Reddit, and Bluesky all have MCP integrations. Agents can read posts, publish content, track mentions, and pull engagement analytics.',
+    },
+    {
+      question: 'Can an AI agent manage social media through MCP?',
+      answer: 'Social MCP servers support content scheduling, social listening, and analytics retrieval. They require OAuth so you control exactly which accounts and actions the agent can access.',
+    },
+  ],
+  ecommerce: [
+    {
+      question: 'What e-commerce platforms have MCP servers?',
+      answer: 'Shopify, WooCommerce, BigCommerce, and similar platforms have MCP integrations. Agents can manage products, read orders, handle inventory, and pull sales data.',
+    },
+    {
+      question: 'Can an AI agent handle customer service for my store?',
+      answer: 'E-commerce MCP servers give agents access to order history, product catalogs, and customer data. Combined with communication servers, they can answer questions and process requests.',
+    },
+  ],
+  devtools: [
+    {
+      question: 'What developer tool integrations does MCP offer?',
+      answer: 'There are MCP servers for GitHub, GitLab, Jira, Linear, Sentry, and many more. They let AI agents create issues, review PRs, query error logs, and interact with your dev workflow.',
+    },
+    {
+      question: 'How do MCP servers fit into a CI/CD pipeline?',
+      answer: 'MCP servers connect your AI client to tools like GitHub Actions, CircleCI, and Jenkins. Agents can check build status, read logs, and help debug failed pipelines without leaving the chat.',
+    },
+  ],
+  communication: [
+    {
+      question: 'Can AI agents send messages through MCP servers?',
+      answer: 'Communication MCP servers support Slack, Discord, email, and Microsoft Teams. Depending on the server, agents can read channels, send messages, or summarize conversations.',
+    },
+    {
+      question: 'Are communication MCP servers safe to use?',
+      answer: 'Most communication servers require explicit OAuth or API key setup and support scoped permissions. You control exactly which channels or mailboxes the agent can access.',
+    },
+  ],
+  filesystems: [
+    {
+      question: 'How do file system MCP servers work?',
+      answer: 'File system MCP servers give AI agents controlled access to local directories, Google Drive, Dropbox, or S3 buckets. You configure which paths are accessible and whether writes are allowed.',
+    },
+    {
+      question: 'Is it safe to let an AI agent access my files?',
+      answer: 'File system servers let you allowlist specific directories and set read-only mode. The agent only sees files you explicitly permit — nothing outside the configured scope.',
+    },
+    {
+      question: 'Can I use MCP to search across documents?',
+      answer: 'Several file system servers support full-text search and content extraction from PDFs, Word docs, and other formats, making it easy for agents to find information across your files.',
+    },
+  ],
+  search: [
+    {
+      question: 'What search and knowledge MCP servers exist?',
+      answer: 'MCP Find lists servers for Brave Search, Google, Wikipedia, web scraping, and specialized knowledge bases. They let agents fetch live information beyond their training data.',
+    },
+    {
+      question: 'How does web search through MCP differ from a normal search?',
+      answer: 'Instead of returning a list of links, search MCP servers feed structured results directly to the AI agent, which can synthesize answers, compare sources, and cite references in its response.',
+    },
+  ],
+  'ai-ml': [
+    {
+      question: 'What AI and ML MCP servers are available?',
+      answer: 'There are MCP servers for OpenAI, Hugging Face, vector databases like Pinecone and Weaviate, and various embedding services. They let agents orchestrate multi-model workflows.',
+    },
+    {
+      question: 'Can I chain multiple AI models together using MCP?',
+      answer: 'Yes — AI/ML MCP servers enable agents to call external models, store and query embeddings, and pipe outputs between services, all from a single conversation.',
+    },
+    {
+      question: 'Do AI/ML MCP servers support local models?',
+      answer: 'Several servers integrate with Ollama, llama.cpp, and other local inference tools, so your agent can leverage on-device models without sending data to external APIs.',
+    },
+  ],
+  finance: [
+    {
+      question: 'What finance-related MCP servers are available?',
+      answer: 'MCP Find lists servers for Stripe, payment processing, banking APIs, invoicing tools, and financial data providers. They bring financial operations into your AI workflow.',
+    },
+    {
+      question: 'Can an AI agent process payments through MCP?',
+      answer: 'Finance MCP servers like Stripe integrations can create invoices, check payment status, and manage subscriptions. Sensitive operations typically require explicit confirmation steps.',
+    },
+  ],
+  crm: [
+    {
+      question: 'Which CRM platforms have MCP servers?',
+      answer: 'Salesforce, HubSpot, and other CRM platforms have MCP server integrations. Agents can look up contacts, update deal stages, and pull reports directly from your CRM.',
+    },
+    {
+      question: 'How do CRM MCP servers handle sensitive customer data?',
+      answer: 'CRM servers authenticate via OAuth or API keys with scoped permissions. You control which objects and fields the agent can read or modify, just like any other API integration.',
+    },
+  ],
+  productivity: [
+    {
+      question: 'What productivity tools have MCP servers?',
+      answer: 'Notion, Google Calendar, Todoist, Trello, Asana, and other productivity apps have MCP integrations. Agents can create tasks, schedule events, and organize notes on your behalf.',
+    },
+    {
+      question: 'Can an AI agent manage my calendar through MCP?',
+      answer: 'Calendar MCP servers let agents check availability, create events, and send invites. Most require OAuth consent so you stay in control of what gets scheduled.',
+    },
+    {
+      question: 'Do productivity MCP servers work across multiple apps?',
+      answer: 'You can install multiple productivity MCP servers at once. An agent could check your Notion docs, create a Trello card, and add a calendar reminder — all in one conversation.',
+    },
+  ],
+  maps: [
+    {
+      question: 'What mapping and location MCP servers are available?',
+      answer: 'Google Maps, Mapbox, OpenStreetMap, and geocoding APIs all have MCP integrations. Agents can resolve addresses, calculate routes, find nearby places, and work with geospatial data.',
+    },
+    {
+      question: 'Can an AI agent build location-aware features through MCP?',
+      answer: 'Maps MCP servers provide geocoding, routing, and place search capabilities. Agents can convert addresses to coordinates, estimate travel times, and query points of interest.',
+    },
+  ],
+  other: [
+    {
+      question: 'What kinds of MCP servers are in the Other category?',
+      answer: 'The Other category includes servers that don\'t fit neatly into a single domain — things like browser automation, IoT integrations, custom API wrappers, and experimental tools.',
+    },
+    {
+      question: 'How do I find the right MCP server for my use case?',
+      answer: 'Use the search and filter tools on MCP Find to narrow by capability, language, or keyword. Every server listing includes install instructions and a link to its source repository.',
+    },
+  ],
+};
+
 export const CATEGORY_DESCRIPTIONS: Record<Category, string> = {
   databases: 'Connect your AI agent to the databases it needs. This category covers MCP servers for PostgreSQL, MySQL, SQLite, MongoDB, Redis, and more. Whether you\'re querying production data, running migrations, or letting an agent manage a local dev database, you\'ll find integrations here. Most servers support both read-only and read-write modes so you can pick the right level of access.',
   cloud: 'MCP servers for the big cloud providers — AWS, GCP, Azure — plus platforms like Vercel, Fly.io, and Cloudflare. Use these to let your agent provision resources, query logs, manage deployments, or inspect infrastructure state. Useful when you want an agent that can actually do things in your cloud environment, not just talk about it.',
