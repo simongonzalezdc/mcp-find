@@ -1,10 +1,13 @@
-import { getTopServers } from '@/lib/queries';
+import { getTopServers, getCategoryLastUpdated } from '@/lib/queries';
 import { SITE_URL, CATEGORIES } from '@mcpfind/shared';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const servers = await getTopServers(5000); // Get all servers
+  const [servers, categoryLastUpdated] = await Promise.all([
+    getTopServers(5000),
+    getCategoryLastUpdated(),
+  ]);
 
   const today = new Date().toISOString().split('T')[0];
   const staticPages = [
@@ -14,9 +17,9 @@ export async function GET() {
 
   const categoryPages = CATEGORIES.map(cat => ({
     url: `${SITE_URL}/categories/${cat}`,
-    changefreq: 'daily' as const,
+    changefreq: 'weekly' as const,
     priority: '0.8',
-    lastmod: today,
+    lastmod: categoryLastUpdated[cat] || today,
   }));
 
   const serverPages = servers.map(s => ({

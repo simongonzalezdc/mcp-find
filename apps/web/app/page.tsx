@@ -5,8 +5,10 @@ import { Navbar } from "@/components/ui/navbar";
 import { HeroSearch } from "@/components/ui/hero-search";
 import { safeJsonLd } from "@/lib/json-ld";
 import { getTopServers, getServerCount, listServers } from "@/lib/queries";
-import { CATEGORIES, CATEGORY_LABELS } from "@mcpfind/shared";
+import { CATEGORIES, CATEGORY_LABELS, SITE_URL } from "@mcpfind/shared";
 import type { Category, ServerListItem } from "@mcpfind/shared";
+import { HomeFaq } from "@/components/ui/home-faq";
+import { HOME_FAQS } from "@/lib/home-faqs";
 import {
   IconDatabase,
   IconCode,
@@ -355,8 +357,23 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── 6. CTA Banner ── */}
+      {/* ── 6. FAQ ── */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-neutral-500 text-lg">
+              Everything you need to know about MCP servers and MCP Find.
+            </p>
+          </div>
+          <HomeFaq />
+        </div>
+      </section>
+
+      {/* ── 7. CTA Banner ── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950/50">
         <div className="max-w-4xl mx-auto">
           <div className="relative rounded-2xl overflow-hidden border border-blue-500/20 bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-blue-900/20 p-12 text-center">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]" />
@@ -389,7 +406,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 7. Footer ── */}
+      {/* ── 8. Footer ── */}
       <footer className="border-t border-neutral-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
@@ -498,16 +515,31 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{
           __html: safeJsonLd({
             "@context": "https://schema.org",
-            "@type": "WebSite",
-            name: "MCP Find",
-            url: "https://mcpfind.org",
-            description:
-              "Open-source directory of MCP servers. AI-agent optimized. Get instant install configs for Claude Desktop, Cursor, VS Code, Windsurf, and Claude Code.",
-            publisher: {
-              "@type": "Organization",
-              name: "MCP Find",
-              url: "https://mcpfind.org",
-            },
+            "@graph": [
+              {
+                "@type": "WebSite",
+                name: "MCP Find",
+                url: "https://mcpfind.org",
+                description:
+                  "Open-source directory of MCP servers. AI-agent optimized. Get instant install configs for Claude Desktop, Cursor, VS Code, Windsurf, and Claude Code.",
+                publisher: {
+                  "@type": "Organization",
+                  name: "MCP Find",
+                  url: "https://mcpfind.org",
+                },
+              },
+              {
+                "@type": "FAQPage",
+                mainEntity: HOME_FAQS.map((faq) => ({
+                  "@type": "Question",
+                  name: faq.question,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: faq.answer,
+                  },
+                })),
+              },
+            ],
           }),
         }}
       />
