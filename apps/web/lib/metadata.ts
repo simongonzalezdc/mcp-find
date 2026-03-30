@@ -98,7 +98,15 @@ export function generateCategoryMetadata(
   count: number
 ): Metadata {
   const title = `${categoryLabel} MCP Servers`;
-  const description = (CATEGORY_DESCRIPTIONS[category as Category] || `Browse ${count}+ ${categoryLabel.toLowerCase()} MCP servers.`).slice(0, 160);
+  const fullDesc = CATEGORY_DESCRIPTIONS[category as Category] || `Browse ${count}+ ${categoryLabel.toLowerCase()} MCP servers.`;
+  // Truncate at sentence boundary to avoid mid-word cuts in meta descriptions
+  const sentences = fullDesc.match(/[^.!?]+[.!?]+/g) || [fullDesc];
+  let description = '';
+  for (const sentence of sentences) {
+    if ((description + sentence).length > 160) break;
+    description += sentence;
+  }
+  if (!description) description = fullDesc.slice(0, 157) + '...';
   return {
     title,
     description,
