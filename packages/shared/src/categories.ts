@@ -115,6 +115,6 @@ export const CATEGORY_LLM_DESCRIPTIONS: Record<Exclude<Category, 'other'>, strin
   'ai-ml': 'OpenAI, Replicate, Hugging Face, Pinecone, and AI model/embedding/image-generation MCP integrations.',
   finance: 'Stock market data, crypto APIs, QuickBooks, Stripe, and financial data platform MCP integrations.',
   crm: 'Salesforce, HubSpot, Pipedrive, and customer relationship management platform MCP integrations.',
-  productivity: 'Notion, Airtable, Jira, Google Workspace, Todoist, and productivity tool MCP integrations.',
+  productivity: 'Notion, Airtable, Google Workspace, Todoist, Asana, and productivity tool MCP integrations.',
   maps: 'Google Maps, Mapbox, OpenStreetMap, geocoding APIs, and location/routing service MCP integrations.',
 };
