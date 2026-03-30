@@ -60,7 +60,7 @@ export function generateCategoryJsonLd(
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
           { '@type': 'ListItem', position: 2, name: 'Categories', item: `${SITE_URL}/categories` },
-          { '@type': 'ListItem', position: 3, name: `${categoryLabel} MCP Servers` },
+          { '@type': 'ListItem', position: 3, name: `${categoryLabel} MCP Servers`, item: `${SITE_URL}/categories/${category}` },
         ],
       },
     ],
@@ -99,12 +99,12 @@ export function generateCategoryMetadata(
 ): Metadata {
   const title = `${categoryLabel} MCP Servers`;
   const fullDesc = CATEGORY_DESCRIPTIONS[category as Category] || `Browse ${count}+ ${categoryLabel.toLowerCase()} MCP servers.`;
-  // Truncate at sentence boundary to avoid mid-word cuts in meta descriptions
-  const sentences = fullDesc.match(/[^.!?]+[.!?]+/g) || [fullDesc];
+  // Truncate at sentence boundary (split on ". " not bare "." to avoid splitting Fly.io, e.g., etc.)
+  const sentences = fullDesc.split(/(?<=[.!?])\s+/);
   let description = '';
   for (const sentence of sentences) {
-    if ((description + sentence).length > 160) break;
-    description += sentence;
+    if ((description ? description + ' ' : '') .length + sentence.length > 160) break;
+    description = description ? description + ' ' + sentence : sentence;
   }
   if (!description) description = fullDesc.slice(0, 157) + '...';
   return {
