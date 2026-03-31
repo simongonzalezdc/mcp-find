@@ -46,12 +46,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://mcpfind.org",
   },
-  verification: {
-    google: '', // TODO: add Google Search Console verification code
-    other: {
-      'msvalidate.01': '', // TODO: add Bing Webmaster Tools verification code
-    },
-  },
+  // Verified via DNS (domain name provider) for both Google and Bing — no HTML meta tags needed
   keywords: ['MCP servers', 'Model Context Protocol', 'Claude Desktop', 'Cursor', 'VS Code', 'AI tools', 'MCP directory', 'MCP integrations', 'AI agent tools'],
 };
 
