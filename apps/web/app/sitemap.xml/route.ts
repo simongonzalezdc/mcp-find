@@ -1,5 +1,7 @@
 import { getTopServers, getCategoryLastUpdated } from '@/lib/queries';
 import { SITE_URL, CATEGORIES } from '@mcpfind/shared';
+import { getAllPosts } from '@/lib/blog';
+import { escapeXml } from '@/lib/escape-xml';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,12 +31,41 @@ export async function GET() {
     lastmod: s.updated_at,
   }));
 
-  const allPages = [...staticPages, ...categoryPages, ...serverPages];
+  // Blog pages
+  const blogPosts = getAllPosts();
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const blogIndexPage = [{
+    url: `${SITE_URL}/blog`,
+    changefreq: 'weekly' as const,
+    priority: '0.8',
+    lastmod: blogPosts[0]?.frontmatter.updatedAt || blogPosts[0]?.frontmatter.date || today,
+  }];
+
+  const blogPages = blogPosts.map(post => {
+    const lastmod = post.frontmatter.updatedAt || post.frontmatter.date;
+    const isRecent = new Date(lastmod) > thirtyDaysAgo;
+    return {
+      url: `${SITE_URL}/blog/${post.slug}`,
+      changefreq: (isRecent ? 'weekly' : 'monthly') as string,
+      priority: post.frontmatter.cornerstone ? '0.8' : '0.6',
+      lastmod,
+    };
+  });
+
+  const allPages = [...staticPages, ...categoryPages, ...serverPages, ...blogIndexPage, ...blogPages];
 
   const renderUrl = (p: { url: string; changefreq: string; priority: string; lastmod?: string }) => {
-    const lastmodStr = p.lastmod ? `\n    <lastmod>${new Date(p.lastmod).toISOString().split('T')[0]}</lastmod>` : '';
+    let lastmodStr = '';
+    if (p.lastmod) {
+      try {
+        lastmodStr = `\n    <lastmod>${new Date(p.lastmod).toISOString().split('T')[0]}</lastmod>`;
+      } catch {
+        // Skip lastmod for invalid dates
+      }
+    }
     return `  <url>
-    <loc>${p.url}</loc>
+    <loc>${escapeXml(p.url)}</loc>
     <changefreq>${p.changefreq}</changefreq>
     <priority>${p.priority}</priority>${lastmodStr}
   </url>`;
