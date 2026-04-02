@@ -1,6 +1,7 @@
 import { getTopServers, getCategoryLastUpdated } from '@/lib/queries';
 import { SITE_URL, CATEGORIES } from '@mcpfind/shared';
 import { getAllPosts } from '@/lib/blog';
+import { escapeXml } from '@/lib/escape-xml';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +39,7 @@ export async function GET() {
     url: `${SITE_URL}/blog`,
     changefreq: 'weekly' as const,
     priority: '0.8',
-    lastmod: blogPosts[0]?.frontmatter.date || today,
+    lastmod: blogPosts[0]?.frontmatter.updatedAt || blogPosts[0]?.frontmatter.date || today,
   }];
 
   const blogPages = blogPosts.map(post => {
@@ -57,7 +58,7 @@ export async function GET() {
   const renderUrl = (p: { url: string; changefreq: string; priority: string; lastmod?: string }) => {
     const lastmodStr = p.lastmod ? `\n    <lastmod>${new Date(p.lastmod).toISOString().split('T')[0]}</lastmod>` : '';
     return `  <url>
-    <loc>${p.url}</loc>
+    <loc>${escapeXml(p.url)}</loc>
     <changefreq>${p.changefreq}</changefreq>
     <priority>${p.priority}</priority>${lastmodStr}
   </url>`;

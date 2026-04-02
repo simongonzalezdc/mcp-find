@@ -1,18 +1,15 @@
 import { SITE_URL } from '@mcpfind/shared';
 import type { BlogPost } from '@/types/blog';
+import { stripMdx } from './blog';
 
 export function generateBlogPostJsonLd(post: BlogPost): object {
-  const wordCount = post.content
-    .replace(/^---[\s\S]*?---/, '')
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/<[^>]+>/g, '')
-    .split(/\s+/)
-    .filter(Boolean).length;
+  const wordCount = stripMdx(post.content).split(/\s+/).filter(Boolean).length;
 
   const graph: object[] = [
     {
       '@type': 'Article',
       '@id': `${SITE_URL}/blog/${post.slug}#article`,
+      url: `${SITE_URL}/blog/${post.slug}`,
       headline: post.frontmatter.title,
       description: post.frontmatter.description,
       datePublished: post.frontmatter.date,
@@ -25,7 +22,7 @@ export function generateBlogPostJsonLd(post: BlogPost): object {
       },
       publisher: { '@id': `${SITE_URL}/#organization` },
       isPartOf: { '@id': `${SITE_URL}/blog#blog` },
-      mainEntityOfPage: `${SITE_URL}/blog/${post.slug}`,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}#webpage` },
       image: {
         '@type': 'ImageObject',
         url: `${SITE_URL}/blog/${post.slug}/opengraph-image`,
@@ -35,6 +32,7 @@ export function generateBlogPostJsonLd(post: BlogPost): object {
       inLanguage: 'en-US',
       wordCount,
       keywords: post.frontmatter.tags,
+      ...(post.frontmatter.faqItems?.length ? { hasPart: { '@id': `${SITE_URL}/blog/${post.slug}#faqpage` } } : {}),
     },
     {
       '@type': 'BreadcrumbList',
@@ -44,6 +42,14 @@ export function generateBlogPostJsonLd(post: BlogPost): object {
         { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog` },
         { '@type': 'ListItem', position: 3, name: post.frontmatter.title, item: `${SITE_URL}/blog/${post.slug}` },
       ],
+    },
+    {
+      '@type': 'WebPage',
+      '@id': `${SITE_URL}/blog/${post.slug}#webpage`,
+      url: `${SITE_URL}/blog/${post.slug}`,
+      name: post.frontmatter.title,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      breadcrumb: { '@id': `${SITE_URL}/blog/${post.slug}#breadcrumb` },
     },
   ];
 

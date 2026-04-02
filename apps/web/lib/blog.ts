@@ -5,12 +5,16 @@ import type { BlogPost, BlogFrontmatter } from '@/types/blog';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content/blog');
 
-function calculateReadingTime(content: string): number {
-  const stripped = content
+/** Strip frontmatter, code blocks, and HTML/JSX tags from MDX content */
+export function stripMdx(content: string): string {
+  return content
     .replace(/^---[\s\S]*?---/, '')
     .replace(/```[\s\S]*?```/g, '')
     .replace(/<[^>]+>/g, '');
-  const words = stripped.split(/\s+/).filter(Boolean).length;
+}
+
+function calculateReadingTime(content: string): number {
+  const words = stripMdx(content).split(/\s+/).filter(Boolean).length;
   return Math.ceil(words / 200);
 }
 
@@ -25,9 +29,13 @@ export function getAllPosts(options?: { limit?: number; offset?: number }): Blog
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const { data, content } = matter(fileContent);
 
+    const frontmatter = data as BlogFrontmatter;
+    // Ensure required array fields have defaults
+    if (!Array.isArray(frontmatter.tags)) frontmatter.tags = [];
+
     return {
       slug,
-      frontmatter: data as BlogFrontmatter,
+      frontmatter,
       content,
       readingTime: calculateReadingTime(content),
     };
@@ -39,7 +47,7 @@ export function getAllPosts(options?: { limit?: number; offset?: number }): Blog
   }
 
   // Sort by date descending
-  posts.sort((a, b) => new Date(b.frontmatter.date).getTime() - new Date(a.frontmatter.date).getTime());
+  posts.sort((a, b) => (new Date(b.frontmatter.date).getTime() || 0) - (new Date(a.frontmatter.date).getTime() || 0));
 
   // Apply pagination
   if (options?.offset) {

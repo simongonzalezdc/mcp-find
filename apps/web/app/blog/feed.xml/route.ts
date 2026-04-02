@@ -19,8 +19,8 @@ export async function GET() {
     <title>${escapeXml(post.frontmatter.title)}</title>
     <link>${link}</link>
     <guid isPermaLink="true">${link}</guid>
-    <description><![CDATA[${description}]]></description>
-    <author>${escapeXml(post.frontmatter.author)}</author>
+    <description><![CDATA[${description.replace(/]]>/g, ']]]]><![CDATA[>')}]]></description>
+    <author>noreply@mcpfind.org (${escapeXml(post.frontmatter.author)})</author>
     <pubDate>${pubDate}</pubDate>
 ${categories}
   </item>`;
@@ -33,6 +33,7 @@ ${categories}
     <link>${SITE_URL}/blog</link>
     <description>Guides, tutorials, and analysis on MCP servers and the Model Context Protocol.</description>
     <language>en-us</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${SITE_URL}/blog/feed.xml" rel="self" type="application/rss+xml"/>
     <image>
       <url>${SITE_URL}/og-image-mcp.png</url>
