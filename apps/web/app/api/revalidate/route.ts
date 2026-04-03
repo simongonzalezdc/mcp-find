@@ -2,7 +2,24 @@ import { revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';
 
+const RATE_LIMIT_WINDOW = 60_000; // 1 minute
+const RATE_LIMIT_MAX = 10; // max 10 requests per minute
+const requestLog = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = requestLog.get(ip)?.filter(t => now - t < RATE_LIMIT_WINDOW) ?? [];
+  timestamps.push(now);
+  requestLog.set(ip, timestamps);
+  return timestamps.length > RATE_LIMIT_MAX;
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const envToken = process.env.REVALIDATE_TOKEN;
   if (!envToken) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
