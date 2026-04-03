@@ -71,12 +71,20 @@ async function _listServers(params: ServerListParams): Promise<ServerListRespons
 }
 
 export async function listServers(params: ServerListParams): Promise<ServerListResponse> {
-  // Use unstable_cache with a key derived from the params so each unique
+  // Use unstable_cache with a deterministic key derived from params so each unique
   // query gets its own cache entry, all tagged "servers" for bulk invalidation.
-  const cacheKey = JSON.stringify(params);
+  // Explicit ordered array avoids key collisions from JSON.stringify key ordering.
+  const cacheKey = [
+    'list-servers',
+    params.category ?? '',
+    params.q ?? '',
+    String(params.page ?? 1),
+    String(params.limit ?? DEFAULT_PAGE_SIZE),
+    params.sort ?? '',
+  ];
   const cached = unstable_cache(
     () => _listServers(params),
-    ['list-servers', cacheKey],
+    cacheKey,
     { tags: ['servers'], revalidate: 3600 }
   );
   return cached();

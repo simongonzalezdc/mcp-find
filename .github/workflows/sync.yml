@@ -28,7 +28,8 @@ jobs:
           GH_ENRICHMENT_TOKEN: ${{ secrets.GH_ENRICHMENT_TOKEN }}
       - name: Bust Vercel cache
         if: success()
+        continue-on-error: true
         run: |
-          curl -sf -X POST https://mcpfind.org/api/revalidate \
+          curl -sf --retry 2 --retry-delay 5 -X POST https://mcpfind.org/api/revalidate \
             -H "Content-Type: application/json" \
             -H "x-revalidate-token: ${{ secrets.REVALIDATE_TOKEN }}"
