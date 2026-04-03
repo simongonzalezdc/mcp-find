@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { supabase } from './supabase';
 import type { Server, ServerListItem, ServerWithTools, ServerListParams, ServerListResponse } from '@mcpfind/shared';
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@mcpfind/shared';
@@ -6,7 +7,7 @@ import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@mcpfind/shared';
 // Excludes readme_content and search_vector to avoid pulling large blobs in list queries
 const SERVER_LIST_COLUMNS = 'id,slug,name,description,version,category,source,package_name,package_type,package_url,has_tools,has_resources,has_prompts,tool_count,github_url,github_stars,github_forks,github_open_issues,github_last_push,github_license,github_language,github_contributors,github_archived,npm_weekly_downloads,registry_status,registry_published_at,registry_updated_at,registry_tags,is_official,featured,created_at,updated_at,last_synced_at';
 
-export async function listServers(params: ServerListParams): Promise<ServerListResponse> {
+async function _listServers(params: ServerListParams): Promise<ServerListResponse> {
   const page = Math.max(1, params.page || 1);
   const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, params.limit || DEFAULT_PAGE_SIZE));
   const offset = (page - 1) * limit;
@@ -69,7 +70,20 @@ export async function listServers(params: ServerListParams): Promise<ServerListR
   };
 }
 
-export const getServerBySlug = cache(async (slug: string): Promise<ServerWithTools | null> => {
+export async function listServers(params: ServerListParams): Promise<ServerListResponse> {
+  // Use unstable_cache with a key derived from the params so each unique
+  // query gets its own cache entry, all tagged "servers" for bulk invalidation.
+  const cacheKey = JSON.stringify(params);
+  const cached = unstable_cache(
+    () => _listServers(params),
+    ['list-servers', cacheKey],
+    { tags: ['servers'], revalidate: 3600 }
+  );
+  return cached();
+}
+
+// Inner function — does the actual Supabase fetch
+async function _getServerBySlug(slug: string): Promise<ServerWithTools | null> {
   const { data: server, error } = await supabase
     .from('servers')
     .select('*')
@@ -84,60 +98,97 @@ export const getServerBySlug = cache(async (slug: string): Promise<ServerWithToo
     .eq('server_id', server.id);
 
   return { ...server, tools: tools || [] } as ServerWithTools;
-});
-
-export async function getServerCount(): Promise<number> {
-  const { count } = await supabase
-    .from('servers')
-    .select('*', { count: 'exact', head: true })
-    .eq('registry_status', 'active');
-  return count || 0;
 }
+
+// React cache() deduplicates within a single request; unstable_cache persists
+// across requests and supports tag-based on-demand revalidation.
+export const getServerBySlug = cache(
+  (slug: string): Promise<ServerWithTools | null> =>
+    unstable_cache(
+      () => _getServerBySlug(slug),
+      ['server-by-slug', slug],
+      { tags: ['servers', `server-${slug}`], revalidate: 86400 }
+    )()
+);
+
+export const getServerCount = unstable_cache(
+  async (): Promise<number> => {
+    const { count } = await supabase
+      .from('servers')
+      .select('*', { count: 'exact', head: true })
+      .eq('registry_status', 'active');
+    return count || 0;
+  },
+  ['server-count'],
+  { tags: ['servers'], revalidate: 3600 }
+);
 
 export async function getTopServers(limit: number): Promise<ServerListItem[]> {
-  const { data } = await supabase
-    .from('servers')
-    .select(SERVER_LIST_COLUMNS)
-    .eq('registry_status', 'active')
-    .order('github_stars', { ascending: false })
-    .limit(limit);
-  return (data || []) as ServerListItem[];
+  return unstable_cache(
+    async () => {
+      const { data } = await supabase
+        .from('servers')
+        .select(SERVER_LIST_COLUMNS)
+        .eq('registry_status', 'active')
+        .order('github_stars', { ascending: false })
+        .limit(limit);
+      return (data || []) as ServerListItem[];
+    },
+    ['top-servers', String(limit)],
+    { tags: ['servers'], revalidate: 3600 }
+  )();
 }
 
-export const getServersByCategory = cache(async (category: string): Promise<ServerListItem[]> => {
-  const { data } = await supabase
-    .from('servers')
-    .select(SERVER_LIST_COLUMNS)
-    .eq('category', category)
-    .eq('registry_status', 'active')
-    .order('github_stars', { ascending: false })
-    .limit(200);
-  return (data || []) as ServerListItem[];
-});
+// React cache() for request-level dedup; unstable_cache for cross-request persistence with tags.
+export const getServersByCategory = cache(
+  (category: string): Promise<ServerListItem[]> =>
+    unstable_cache(
+      async () => {
+        const { data } = await supabase
+          .from('servers')
+          .select(SERVER_LIST_COLUMNS)
+          .eq('category', category)
+          .eq('registry_status', 'active')
+          .order('github_stars', { ascending: false })
+          .limit(200);
+        return (data || []) as ServerListItem[];
+      },
+      ['servers-by-category', category],
+      { tags: ['servers', `category-${category}`], revalidate: 3600 }
+    )()
+);
 
-export async function getCategoryLastUpdated(): Promise<Record<string, string>> {
-  const { data } = await supabase
-    .from('servers')
-    .select('category, updated_at')
-    .eq('registry_status', 'active')
-    .order('updated_at', { ascending: false });
+export const getCategoryLastUpdated = unstable_cache(
+  async (): Promise<Record<string, string>> => {
+    const { data } = await supabase
+      .from('servers')
+      .select('category, updated_at')
+      .eq('registry_status', 'active')
+      .order('updated_at', { ascending: false });
 
-  const result: Record<string, string> = {};
-  for (const row of data || []) {
-    if (row.category && !result[row.category]) {
-      result[row.category] = row.updated_at;
+    const result: Record<string, string> = {};
+    for (const row of data || []) {
+      if (row.category && !result[row.category]) {
+        result[row.category] = row.updated_at;
+      }
     }
-  }
-  return result;
-}
+    return result;
+  },
+  ['category-last-updated'],
+  { tags: ['servers'], revalidate: 3600 }
+);
 
-export async function getLastSyncTime(): Promise<string | null> {
-  const { data } = await supabase
-    .from('sync_log')
-    .select('completed_at')
-    .eq('status', 'completed')
-    .order('completed_at', { ascending: false })
-    .limit(1)
-    .single();
-  return data?.completed_at || null;
-}
+export const getLastSyncTime = unstable_cache(
+  async (): Promise<string | null> => {
+    const { data } = await supabase
+      .from('sync_log')
+      .select('completed_at')
+      .eq('status', 'completed')
+      .order('completed_at', { ascending: false })
+      .limit(1)
+      .single();
+    return data?.completed_at || null;
+  },
+  ['last-sync-time'],
+  { tags: ['servers'], revalidate: 3600 }
+);
