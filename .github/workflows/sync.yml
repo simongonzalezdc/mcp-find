@@ -26,3 +26,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GH_ENRICHMENT_TOKEN: ${{ secrets.GH_ENRICHMENT_TOKEN }}
+      - name: Bust Vercel cache
+        if: success()
+        run: |
+          curl -sf -X POST https://mcpfind.org/api/revalidate \
+            -H "Content-Type: application/json" \
+            -H "x-revalidate-token: ${{ secrets.REVALIDATE_TOKEN }}"
