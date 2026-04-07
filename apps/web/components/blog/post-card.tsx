@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { BlogPost } from "@/types/blog";
 import { IconCalendar, IconClock, IconUser } from "@tabler/icons-react";
+import { getAuthorAvatar } from "@/lib/authors";
 
 interface PostCardProps {
   post: BlogPost;
@@ -58,7 +60,17 @@ export function PostCard({ post, className }: PostCardProps) {
       {/* Meta row */}
       <div className="flex items-center gap-4 text-xs text-neutral-500 pt-4 border-t border-neutral-800">
         <span className="flex items-center gap-1.5">
-          <IconUser size={13} className="text-neutral-500" />
+          {getAuthorAvatar(frontmatter.author) ? (
+            <Image
+              src={getAuthorAvatar(frontmatter.author)!}
+              alt={frontmatter.author}
+              width={18}
+              height={18}
+              className="rounded-full object-cover"
+            />
+          ) : (
+            <IconUser size={13} className="text-neutral-500" />
+          )}
           {frontmatter.author}
         </span>
         <span className="flex items-center gap-1.5">

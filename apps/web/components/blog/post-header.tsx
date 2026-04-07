@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { BlogPost } from "@/types/blog";
 import { IconArrowLeft, IconCalendar, IconClock, IconUser } from "@tabler/icons-react";
+import { getAuthorAvatar } from "@/lib/authors";
 
 interface PostHeaderProps {
   post: BlogPost;
@@ -43,8 +45,18 @@ export function PostHeader({ post }: PostHeaderProps) {
 
         {/* Meta row */}
         <div className="flex items-center gap-4 flex-wrap text-sm text-neutral-500">
-          <span className="flex items-center gap-1.5">
-            <IconUser size={15} className="text-neutral-500" />
+          <span className="flex items-center gap-2">
+            {getAuthorAvatar(frontmatter.author) ? (
+              <Image
+                src={getAuthorAvatar(frontmatter.author)!}
+                alt={frontmatter.author}
+                width={28}
+                height={28}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <IconUser size={15} className="text-neutral-500" />
+            )}
             {frontmatter.authorUrl ? (
               <a
                 href={frontmatter.authorUrl}
