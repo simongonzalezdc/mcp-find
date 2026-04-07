@@ -23,7 +23,7 @@ faqItems:
   - question: "Can I use MCP and function calling together in the same application?"
     answer: "Yes. Many production agents do exactly this. MCP handles external tool access (databases, APIs, file systems) while function calling handles in-process logic that does not need a separate server. The two layers complement each other rather than compete."
   - question: "Does MCP work with models other than Claude?"
-    answer: "Yes. MCP is a open protocol not tied to Anthropic. OpenAI, Google DeepMind, and several open-source model providers have implemented MCP clients. If you build an MCP server, it works with any client that supports the protocol, which is the main architectural advantage over function calling."
+    answer: "Yes. MCP is an open protocol not tied to Anthropic. OpenAI, Google DeepMind, and several open-source model providers have implemented MCP clients. If you build an MCP server, it works with any client that supports the protocol, which is the main architectural advantage over function calling."
   - question: "Is there a performance cost to using MCP instead of function calling?"
     answer: "There is some overhead from the client-server transport layer. For stdio-based servers on the same machine, the latency is typically under 10ms. For HTTP-based remote servers, latency depends on network conditions. For most agent workflows, this is not a bottleneck, but it matters for high-frequency tool calls."
   - question: "How does the MCPFind directory categorize servers by transport type?"
@@ -72,7 +72,7 @@ Yes. Many production agents do exactly this. MCP handles external tool access (d
 
 ### Does MCP work with models other than Claude?
 
-Yes. MCP is a open protocol not tied to Anthropic. OpenAI, Google DeepMind, and several open-source model providers have implemented MCP clients. If you build an MCP server, it works with any client that supports the protocol, which is the main architectural advantage over function calling.
+Yes. MCP is an open protocol not tied to Anthropic. OpenAI, Google DeepMind, and several open-source model providers have implemented MCP clients. If you build an MCP server, it works with any client that supports the protocol, which is the main architectural advantage over function calling.
 
 ### Is there a performance cost to using MCP instead of function calling?
 
