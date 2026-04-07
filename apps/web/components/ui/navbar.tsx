@@ -94,6 +94,17 @@ export function Navbar({ variant: _variant }: NavbarProps) {
             >
               Browse Servers
             </Link>
+            <Link
+              href="/blog"
+              className={cn(
+                "relative flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                pathname.startsWith("/blog")
+                  ? "text-white bg-white/10"
+                  : "text-neutral-300 hover:bg-white/10 hover:text-white"
+              )}
+            >
+              Blog
+            </Link>
             <a
               href="https://modelcontextprotocol.io"
               target="_blank"
@@ -143,6 +154,18 @@ export function Navbar({ variant: _variant }: NavbarProps) {
                     onClick={() => setMenuOpen(false)}
                   >
                     Browse Servers
+                  </Link>
+                  <Link
+                    href="/blog"
+                    className={cn(
+                      "block px-4 py-3 text-sm font-medium transition-colors",
+                      pathname.startsWith("/blog")
+                        ? "text-white bg-white/10"
+                        : "text-neutral-300 hover:bg-white/10 hover:text-white"
+                    )}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Blog
                   </Link>
                   <a
                     href="https://modelcontextprotocol.io"
