@@ -1,0 +1,97 @@
+---
+title: "Best MCP Servers for Cloud: AWS, GCP, and Cloudflare Compared"
+description: "MCPFind indexes 119 cloud MCP servers averaging 82 GitHub stars, the highest of any category. Compare top options for AWS, GCP, and Cloudflare by capability and auth model."
+excerpt: "Cloud infrastructure teams are connecting AI assistants to their AWS, GCP, and Cloudflare environments through MCP servers. MCPFind indexes 119 cloud category servers with an average of 82 GitHub stars per server, the highest average across all 21 categories. This guide compares the top options by capability and authentication model."
+date: "2026-04-07"
+updatedAt: "2026-04-07"
+author: "Gus Marquez"
+authorUrl: "https://mcpfind.org/authors/gus-marquez"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/gusmar2017"
+tags:
+  - "mcp"
+  - "developer"
+  - "cloud"
+  - "aws"
+  - "infrastructure"
+category: "cloud"
+focusKeyword: "best MCP servers cloud AWS GCP"
+draft: true
+cornerstone: false
+faqItems:
+  - question: "Do cloud MCP servers require broad IAM permissions?"
+    answer: "Not necessarily. Most AWS MCP implementations let you scope permissions through IAM roles. Apply least-privilege: grant only the specific actions the server's tools require, not Administrator or PowerUser access. A CloudWatch-only server should only need cloudwatch:GetMetricData and similar read-only permissions."
+  - question: "Is there an official AWS MCP server from Amazon?"
+    answer: "AWS does not maintain a general-purpose first-party MCP server for infrastructure management as of April 2026. Community-built servers cover the most common services. For Amazon Bedrock specifically, AWS has published integration guidance for MCP client connections."
+  - question: "Can I use a cloud MCP server in a shared team environment?"
+    answer: "Yes, but HTTP-transport servers need additional access control. Network-accessible MCP servers should sit behind authentication middleware restricted by role or IP. Stdio servers are easier to isolate since they run per-user on the local machine."
+  - question: "How does the Cloudflare MCP server differ from using the Cloudflare API directly?"
+    answer: "The Cloudflare MCP server exposes specific tools for common operations (zone management, DNS records, Workers deployment) rather than the full API surface. It works directly from Claude Desktop without custom code, and the tool names map to operations engineers perform daily."
+---
+
+Cloud infrastructure is one of the clearest MCP use cases for engineering teams. The work is repetitive, context-heavy, and already documented in structured APIs. Connecting an MCP server to your AWS, GCP, or Cloudflare environment lets AI assistants query resource states, generate config, and surface error context without switching between consoles. We analyzed the 119 servers in MCPFind's [cloud category](/categories/cloud), which averages 82 GitHub stars per server. That is the highest average of all 21 MCPFind categories, ahead of even devtools (43.9 stars per server). If you are new to MCP setup, read [what MCP is](/blog/what-is-mcp) first. This guide covers what the top options actually do and how to choose between them.
+
+## What Makes the Cloud Category Stand Out in the Directory
+
+The high average star count in the cloud category reflects who builds these servers. While the devtools category has 2,462 servers, most are narrow single-use tools with low community adoption. Cloud servers attract infrastructure engineers who are comfortable with GitHub, API auth, and production systems. That audience writes better code, more complete READMEs, and maintains servers longer.
+
+Cloudflare leads the category with 3,566 GitHub stars for their MCP server, the highest single-server count in cloud. AWS and GCP have community-built options with more variable quality. Several have cleared the 500-star threshold that signals real-world adoption beyond individual projects.
+
+The pattern we see across the directory: providers with strong developer programs (Cloudflare, Stripe, GitHub) tend to have better MCP tooling than enterprise cloud providers whose customers typically interact through web consoles and vendor SDKs. Star count correlates with utility. A cloud MCP server that does not save meaningful time gets abandoned. High-starred servers have proven themselves in real workflows.
+
+## Cloudflare MCP: The Current Standard for Cloud Tooling
+
+The Cloudflare MCP server ([`com-cloudflare-mcp-mcp`](/servers/com-cloudflare-mcp-mcp), 3,566 GitHub stars) is the most capable and consistently maintained cloud server in the MCPFind directory. It covers zone management, DNS record operations, Workers deployment, R2 object storage, and KV namespace access. The tool surface is well-documented, and error messages are specific enough to act on, which matters when debugging production configurations through an AI assistant.
+
+Setup follows the standard pattern: add the server block to your `claude_desktop_config.json`, set your API token as an environment variable, and optionally scope it to specific account IDs. Cloudflare's token permission system handles least-privilege access cleanly. You generate a token scoped to exactly what the server's tools need.
+
+```json
+{
+  "mcpServers": {
+    "cloudflare": {
+      "command": "npx",
+      "args": ["-y", "@cloudflare/mcp-server-cloudflare"],
+      "env": {
+        "CLOUDFLARE_API_TOKEN": "your-token-here"
+      }
+    }
+  }
+}
+```
+
+For teams on Cloudflare's developer platform, this is the obvious starting point. It handles daily operations (checking worker logs, updating DNS, listing R2 buckets) without opening the dashboard or writing curl commands manually.
+
+## AWS and GCP Options for Infrastructure Teams
+
+AWS does not maintain a general-purpose first-party MCP server as of April 2026. Community-built options take two approaches: broad-scope servers wrapping the full AWS SDK, and narrow-scope servers targeting specific services (CloudWatch, S3, EC2, Bedrock). We recommend the narrow-scope approach for production use. Specific tools produce more predictable call behavior and straightforward IAM scoping.
+
+For GCP, the pattern is similar. The highest-starred community servers focus on BigQuery, Cloud Run, and Pub/Sub rather than general infrastructure management. That focus reflects actual usage. Data teams query BigQuery through AI assistants more than they manage VPC configurations that way.
+
+When evaluating any cloud MCP server for production, check two things beyond star count. First, does it support multi-profile or multi-account configurations? Servers that hardcode a single credential profile become a problem as teams scale across accounts. Second, does tool call behavior produce an audit trail? In regulated environments, any server calling your cloud provider's write APIs needs logging equivalent to what you would require from automated deployment pipelines. The [mcp-security-basics](/blog/mcp-security-basics) guide covers that evaluation framework in more detail.
+
+## How to Choose Based on Your Team's Cloud Stack
+
+The right server depends on three variables: which cloud provider you use primarily, whether you need read-only or read-write access, and whether the server runs locally on developer machines or on a shared host.
+
+For Cloudflare-first teams, the official server is the clear choice. For AWS teams, start with a narrow server matched to your primary use case rather than a broad SDK wrapper. Most teams actually need only 10-20% of what the full AWS SDK exposes. Pick the server that covers those operations specifically. For GCP teams on data infrastructure, look for servers explicitly targeting BigQuery or Cloud Run with active issue trackers showing recent maintenance.
+
+Read-only servers are the right default for shared environments. Granting write access through an MCP server requires the same approval and rollback process you would apply to any deployment automation. Browse the [cloud category on MCPFind](/categories/cloud) with the star filter set to 100+ to see the options that have already proven adoption in production environments.
+
+## Frequently Asked Questions
+
+### Do cloud MCP servers require broad IAM permissions?
+
+Not necessarily. Most AWS MCP implementations let you scope permissions through IAM roles. Apply least-privilege: grant only the specific actions the server's tools require, not Administrator or PowerUser access. A CloudWatch-only server should only need cloudwatch:GetMetricData and similar read-only permissions.
+
+### Is there an official AWS MCP server from Amazon?
+
+AWS does not maintain a general-purpose first-party MCP server for infrastructure management as of April 2026. Community-built servers cover the most common services. For Amazon Bedrock specifically, AWS has published integration guidance for MCP client connections.
+
+### Can I use a cloud MCP server in a shared team environment?
+
+Yes, but HTTP-transport servers need additional access control. Network-accessible MCP servers should sit behind authentication middleware restricted by role or IP. Stdio servers are easier to isolate since they run per-user on the local machine.
+
+### How does the Cloudflare MCP server differ from using the Cloudflare API directly?
+
+The Cloudflare MCP server exposes specific tools for common operations (zone management, DNS records, Workers deployment) rather than the full API surface. It works directly from Claude Desktop without custom code, and the tool names map to operations engineers perform daily.

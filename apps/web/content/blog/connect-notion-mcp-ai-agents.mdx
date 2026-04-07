@@ -83,4 +83,18 @@ The right choice depends on where your information already lives. If your notes 
 
 ## Frequently Asked Questions
 
-{/* Rendered from faqItems by CMS */}
+### Does connecting Notion via MCP give the AI access to my entire workspace?
+
+No. You grant access through a Notion integration that you create in your workspace settings. You choose exactly which pages and databases the integration can see. Nothing outside that scope is accessible.
+
+### Can Claude create new Notion pages, or just read existing ones?
+
+It depends on the MCP server and the permissions you set on your Notion integration. Many servers support creating pages, updating database entries, and adding blocks, not just reading content.
+
+### Do I need to know how to code to set up a Notion MCP server?
+
+Basic setup requires editing a JSON config file and pasting an API key. There is no coding involved. The hardest part is creating the Notion integration and finding your config file location.
+
+### Will the Notion MCP server work with Notion databases, or just pages?
+
+Most Notion MCP servers support both pages and databases. You can query database entries with filters, add new rows, and read page content. The agent treats both as queryable sources.

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { AuroraBackground } from "@/components/aceternity/aurora-background";
 import { ServerCard } from "@/components/ui/server-card";
+import { PostCard } from "@/components/blog/post-card";
 import { Navbar } from "@/components/ui/navbar";
 import { HeroSearch } from "@/components/ui/hero-search";
 import { safeJsonLd } from "@/lib/json-ld";
+import { getAllPosts } from "@/lib/blog";
 import { getTopServers, getServerCount, listServers } from "@/lib/queries";
 import { CATEGORIES, CATEGORY_LABELS, SITE_URL } from "@mcpfind/shared";
 import type { Category, ServerListItem } from "@mcpfind/shared";
@@ -24,7 +26,7 @@ import {
   IconSearch,
   IconPlug,
   IconRocket,
-  IconLock,
+  IconShieldCheck,
   IconArrowRight,
   IconStar,
   IconDownload,
@@ -107,7 +109,7 @@ export default async function HomePage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
             </span>
-            Now featuring {serverCount > 0 ? `${serverCount.toLocaleString()}+` : "500+"} MCP servers
+            Now featuring {serverCount > 0 ? `${serverCount.toLocaleString()}+` : "500+"} verified MCP servers
           </div>
 
           {/* Headline */}
@@ -122,8 +124,8 @@ export default async function HomePage() {
           </h1>
 
           <p className="text-neutral-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            The open directory of Model Context Protocol servers — browse,
-            search, and integrate tools into your AI workflows.
+            The open directory of verified Model Context Protocol servers —
+            browse, search, and integrate trusted tools into your AI workflows.
           </p>
 
           <HeroSearch />
@@ -151,7 +153,7 @@ export default async function HomePage() {
               <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
                 {serverCount > 0 ? `${serverCount.toLocaleString()}+` : "500+"}
               </span>
-              <span className="text-neutral-500 mt-1">MCP Servers</span>
+              <span className="text-neutral-500 mt-1">Verified MCP Servers</span>
             </div>
             <div className="w-px h-12 bg-neutral-800 hidden sm:block self-center" />
             <div className="flex flex-col items-center">
@@ -215,12 +217,12 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6">
-              <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center mb-4">
-                <IconLock size={20} className="text-red-400" />
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
+                <IconShieldCheck size={20} className="text-emerald-400" />
               </div>
-              <h3 className="font-bold text-neutral-200 mb-2">Security First</h3>
+              <h3 className="font-bold text-neutral-200 mb-2">Verified &amp; Secure</h3>
               <p className="text-neutral-400 text-sm leading-relaxed">
-                All servers are reviewed for security best practices. Official servers are maintained by Anthropic and verified partners.
+                Every server is reviewed and verified before listing. Official servers are maintained by Anthropic and trusted partners, so you can deploy with confidence.
               </p>
             </div>
             <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6">
@@ -392,8 +394,54 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 7. CTA Banner ── */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950/50">
+      {/* ── 7. From the Blog ── */}
+      {(() => {
+        const latestPosts = getAllPosts({ limit: 3 });
+        if (latestPosts.length === 0) return null;
+        return (
+          <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950/50">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-between mb-12">
+                <div>
+                  <h2 className="text-3xl sm:text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+                    From the Blog
+                  </h2>
+                  <p className="text-neutral-500">
+                    Guides, tutorials, and insights on MCP
+                  </p>
+                </div>
+                <Link
+                  href="/blog"
+                  className="hidden sm:flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
+                >
+                  View all
+                  <IconArrowRight size={16} />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {latestPosts.map((post) => (
+                  <PostCard key={post.slug} post={post} />
+                ))}
+              </div>
+
+              {/* Mobile "View all" link */}
+              <div className="flex sm:hidden justify-center mt-8">
+                <Link
+                  href="/blog"
+                  className="flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
+                >
+                  View all articles
+                  <IconArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ── 8. CTA Banner ── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="relative rounded-2xl overflow-hidden border border-blue-500/20 bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-blue-900/20 p-12 text-center">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(59,130,246,0.1)_0%,transparent_70%)]" />
@@ -426,7 +474,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── 8. Footer ── */}
+      {/* ── 9. Footer ── */}
       <footer className="border-t border-neutral-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
@@ -503,6 +551,14 @@ export default async function HomePage() {
                     className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors duration-200"
                   >
                     Submit a Server
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/blog"
+                    className="text-neutral-500 hover:text-neutral-300 text-sm transition-colors duration-200"
+                  >
+                    Blog
                   </Link>
                 </li>
                 <li>

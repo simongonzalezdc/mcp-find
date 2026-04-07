@@ -1,0 +1,83 @@
+---
+title: "MCP vs Function Calling: Which Should You Build With?"
+description: "A technical comparison of MCP and function calling for AI agent development. Covers architecture, tradeoffs, and when each approach makes sense in 2026."
+excerpt: "MCP and function calling solve different problems in AI agent architecture. Function calling is tight, in-process, and fast. MCP is modular, reusable across models, and designed for production tooling. We analyzed both patterns against real servers in the MCPFind directory to map out when each one wins."
+date: "2026-04-07"
+updatedAt: "2026-04-07"
+author: "Gus Marquez"
+authorUrl: "https://mcpfind.org/authors/gus-marquez"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/gusmar2017"
+tags:
+  - "mcp"
+  - "developer"
+  - "function-calling"
+  - "ai-agents"
+  - "architecture"
+category: "ai-ml"
+focusKeyword: "MCP vs function calling"
+draft: true
+cornerstone: false
+faqItems:
+  - question: "Can I use MCP and function calling together in the same application?"
+    answer: "Yes. Many production agents do exactly this. MCP handles external tool access (databases, APIs, file systems) while function calling handles in-process logic that does not need a separate server. The two layers complement each other rather than compete."
+  - question: "Does MCP work with models other than Claude?"
+    answer: "Yes. MCP is an open protocol not tied to Anthropic. OpenAI, Google DeepMind, and several open-source model providers have implemented MCP clients. If you build an MCP server, it works with any client that supports the protocol, which is the main architectural advantage over function calling."
+  - question: "Is there a performance cost to using MCP instead of function calling?"
+    answer: "There is some overhead from the client-server transport layer. For stdio-based servers on the same machine, the latency is typically under 10ms. For HTTP-based remote servers, latency depends on network conditions. For most agent workflows, this is not a bottleneck, but it matters for high-frequency tool calls."
+  - question: "How does the MCPFind directory categorize servers by transport type?"
+    answer: "MCPFind tracks whether servers use stdio or HTTP transport based on their configuration metadata. The devtools category, which has 2,462 servers, skews heavily toward stdio since most developer tool servers run locally."
+---
+
+If you are building an AI agent in 2026, you will hit a fork in the road: use your model's built-in function calling, or set up an MCP server. The two approaches feel similar on the surface. Both let an LLM invoke tools. But they solve different architectural problems, and picking the wrong one adds friction that compounds as your agent grows. We analyzed 5,296 servers in the [MCPFind directory](/categories/ai-ml) to understand what production teams actually choose, and the pattern is clearer than most comparison posts suggest. If you are new to MCP itself, read [what MCP is](/blog/what-is-mcp) first, then come back here.
+
+## How Function Calling Works Under the Hood
+
+Function calling keeps everything inside one process. You define tools as JSON schemas, pass them in the API request alongside your prompt, and the model returns a structured tool call object when it wants to invoke one. Your application code handles the execution and feeds the result back into the next message. The loop is tight: model, app, model, app.
+
+The defining characteristic is that function definitions live in your codebase. You own the schema, the executor, and the retry logic. There is no separate process to launch or authenticate. This makes function calling fast to prototype and easy to test in isolation. A search function, a calculator, a database query wrapper, any synchronous operation your application already handles, fits this model well.
+
+The tradeoff is portability. Function schemas are provider-specific. OpenAI format does not map cleanly to Anthropic format. If you want to switch models or run the same tools with a different client, you rewrite the definitions. For a two-tool prototype that is a minor inconvenience. For a 20-tool production agent, it is a meaningful maintenance cost.
+
+## How MCP Changes the Architecture
+
+MCP separates tool execution from the client application by moving it into a standalone server process. The client (Claude, Cursor, your custom agent) connects to the server over a standard transport, requests a list of available tools, and issues tool calls through a defined JSON-RPC protocol. The server handles execution and returns results. Neither side needs to know the implementation details of the other.
+
+This separation does three things that function calling cannot. First, the same MCP server works with any client that supports the protocol, without modification. Second, tool logic lives in one place regardless of how many clients connect to it. Third, servers can expose resources and prompt templates in addition to tools, giving agents richer context than raw function results.
+
+We see this play out in the directory data. The [devtools category](/categories/devtools) alone has 2,462 MCP servers, the largest of MCPFind's 21 categories. Developer tool authors build MCP servers because their users run multiple clients: Claude Desktop, Cursor, Windsurf, VS Code. Writing one MCP server reaches all of them. Writing function definitions would mean maintaining four separate implementations.
+
+## When Function Calling Wins
+
+Function calling is the right choice when your tools are tightly coupled to your application state, when latency is critical, or when you are building a prototype you expect to throw away. A chatbot that needs to look up a user's account balance by querying an in-memory cache is not a good MCP candidate. The tool has no reason to exist as an independent server.
+
+It also wins when you need precise control over schema validation and error handling. Function calling puts you in charge of every failure mode. MCP's transport layer introduces network-like failure modes (connection drops, timeouts, protocol mismatches) that you have to handle even for local servers.
+
+For single-model deployments where you are confident about your provider choice, function calling avoids overhead without sacrificing capability. Most Stripe integrations, for example, start as function-calling wrappers before graduating to a dedicated server if usage grows. The [Stripe MCP server](/servers/com-stripe-mcp) (1,395 stars on GitHub) is the production-ready version of what started as a function-calling integration at many fintech teams.
+
+## When MCP Wins
+
+MCP wins in three scenarios: multi-client deployments, shared tooling across teams, and integrations that need to outlive your current model choice. If you are building a tool that other developers will use, publishing it as an MCP server means your users can connect it to whichever AI client they prefer, without waiting for you to ship a client-specific integration.
+
+It also wins for integrations that require stateful context. MCP servers can maintain connection state between calls, which matters for database sessions, authenticated service connections, and workflow continuations. Function calling resets state with every API call.
+
+The [ai-ml category](/categories/ai-ml) in MCPFind has 715 servers, and the highest-starred entries (led by Netdata at 78,193 GitHub stars) are production infrastructure tools that pre-date MCP but now expose an MCP interface because it reaches more clients with less code. That pattern, existing tooling gaining an MCP layer, is the most common production adoption path we see in the directory. See also our breakdown of [MCP vs API integration](/blog/mcp-vs-api-integration) for the broader architectural decision.
+
+## Frequently Asked Questions
+
+### Can I use MCP and function calling together in the same application?
+
+Yes. Many production agents do exactly this. MCP handles external tool access (databases, APIs, file systems) while function calling handles in-process logic that does not need a separate server. The two layers complement each other rather than compete.
+
+### Does MCP work with models other than Claude?
+
+Yes. MCP is an open protocol not tied to Anthropic. OpenAI, Google DeepMind, and several open-source model providers have implemented MCP clients. If you build an MCP server, it works with any client that supports the protocol, which is the main architectural advantage over function calling.
+
+### Is there a performance cost to using MCP instead of function calling?
+
+There is some overhead from the client-server transport layer. For stdio-based servers on the same machine, the latency is typically under 10ms. For HTTP-based remote servers, latency depends on network conditions. For most agent workflows, this is not a bottleneck, but it matters for high-frequency tool calls.
+
+### How does the MCPFind directory categorize servers by transport type?
+
+MCPFind tracks whether servers use stdio or HTTP transport based on their configuration metadata. The devtools category, which has 2,462 servers, skews heavily toward stdio since most developer tool servers run locally.

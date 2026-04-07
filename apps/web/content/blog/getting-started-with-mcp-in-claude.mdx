@@ -79,3 +79,23 @@ Close Claude Desktop completely and reopen it. The app reads the config file on 
 Once it reopens, start a new conversation and ask Claude to use the server you just added. For a search server, try: "Search the web for the latest MCP server releases." For a filesystem server, try: "List the files in my Documents folder." If Claude uses the tool and returns a result, the connection is working. If you see an error, double-check that your JSON is valid - a missing comma or bracket is the most common issue.
 
 ## Frequently Asked Questions
+
+### Does Claude Desktop support MCP out of the box?
+
+Yes. Claude Desktop has built-in MCP support. You just need to edit its configuration file to add the servers you want. No extensions or plugins are required.
+
+### Can I run multiple MCP servers at the same time in Claude Desktop?
+
+Yes. Claude Desktop supports multiple simultaneous MCP server connections. You add each server as a separate entry in the mcpServers section of your config file, and Claude can use all of them in the same conversation.
+
+### What happens if an MCP server stops working?
+
+Claude Desktop will show an error if it cannot connect to a configured server. Your other servers and Claude itself continue working normally. You can remove or fix the broken entry in your config file without affecting anything else.
+
+### Do MCP servers have access to my entire computer?
+
+Only what the server is designed to access. A filesystem MCP server, for example, typically limits access to a specific directory you configure. Always read the server documentation to understand exactly what it can and cannot reach.
+
+### Where is the Claude Desktop config file located?
+
+On macOS it is at ~/Library/Application Support/Claude/claude_desktop_config.json. On Windows it is at %APPDATA%\\Claude\\claude_desktop_config.json. Create the file if it does not exist.
