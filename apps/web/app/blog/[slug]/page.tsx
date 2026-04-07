@@ -87,10 +87,18 @@ export default async function BlogPostPage({
   if (!post) notFound();
 
   const relatedPosts = getRelatedPosts(post, 3);
-  const headings = extractHeadings(post.content);
+
+  // Strip the MDX FAQ section when faqItems exist in frontmatter —
+  // the accordion component renders them instead.
+  const mdxSource =
+    post.frontmatter.faqItems && post.frontmatter.faqItems.length > 0
+      ? post.content.replace(/\n## Frequently Asked Questions[\s\S]*$/, "")
+      : post.content;
+
+  const headings = extractHeadings(mdxSource);
 
   const { content } = await compileMDX({
-    source: post.content,
+    source: mdxSource,
     components: mdxComponents,
     options: {
       parseFrontmatter: false,
