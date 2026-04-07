@@ -94,3 +94,23 @@ After saving your config file, reload Cursor with Cmd+Shift+P and select "Develo
 If the server is connected, you will see tool call entries appear in the composer output as the agent runs. If nothing appears, open the Cursor output panel (View > Output) and select "MCP" from the dropdown to see connection errors. The most common issues are a missing `npx` in PATH (fix by using the full path like `/usr/local/bin/npx`) and malformed JSON in your config file. Validate your JSON with a linter before reloading.
 
 ## Frequently Asked Questions
+
+### Does Cursor support MCP natively?
+
+Yes. Cursor has built-in MCP support as of 2024. You configure servers via a JSON file at the project or global level, and Cursor's agent mode can call MCP tools automatically during multi-step tasks.
+
+### What is the difference between project-level and global MCP config in Cursor?
+
+A project-level config at .cursor/mcp.json applies only to that repository. A global config at ~/.cursor/mcp.json applies across all projects. Project-level config takes precedence when both exist for the same server name.
+
+### Can Cursor MCP servers access environment variables?
+
+Yes. The env field in the server config block lets you pass environment variables to the server process. This is the standard pattern for API keys - never hardcode credentials in the args array.
+
+### Why would an MCP server work in Claude Desktop but not in Cursor?
+
+Cursor and Claude Desktop use slightly different config schemas. Cursor uses the mcpServers key inside .cursor/mcp.json. Verify the command resolves correctly in your PATH - Cursor may not inherit shell aliases the way a terminal session does.
+
+### How do I see which MCP tools Cursor is calling during a task?
+
+Open the Cursor composer panel and expand the tool call entries in the response. Each MCP tool call is labeled with the server name and tool name, along with the arguments passed and the result returned.

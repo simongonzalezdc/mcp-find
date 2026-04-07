@@ -68,3 +68,23 @@ For teams deploying MCP in shared environments, network-accessible MCP servers (
 The [security category on MCPFind](/categories/security) has 171 servers designed to help with exactly these challenges, from audit logging tools to access control layers built on top of existing MCP servers. Browse the category if you are configuring MCP for a production environment rather than personal use.
 
 ## Frequently Asked Questions
+
+### Can an MCP server access my files without me knowing?
+
+Only if you grant it permission. MCP servers request access to specific resources, and Claude Desktop shows you what tools a server exposes before you use it. A filesystem server needs access to read your files by design. The risk is connecting a server without reading what it can do.
+
+### What is prompt injection in the context of MCP?
+
+Prompt injection happens when malicious content from an external source (a web page, a file, a database record) contains hidden instructions that cause the AI to perform unintended actions. For example, a document your AI reads might contain text that instructs it to exfiltrate data via another tool call.
+
+### How do I know if an MCP server is safe to use?
+
+Look for open-source servers with public code repositories, active maintenance, and a clear explanation of what the server does. Avoid servers that ask for more permissions than their stated purpose requires. High GitHub star counts and active issue trackers are positive signals.
+
+### Does MCPFind verify that servers are safe?
+
+MCPFind indexes servers and surfaces metadata about them, including license type, source repository, and star counts. We do not run security audits on third-party server code. Evaluating a specific server's code before granting it sensitive access is always the right step.
+
+### What is the least privilege principle for MCP?
+
+Least privilege means giving a server access to only what it needs to do its job. A server that generates text summaries should not need write access to your filesystem. Before connecting any server, check its tool list and ask whether each permission is necessary for the stated purpose.

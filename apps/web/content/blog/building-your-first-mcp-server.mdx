@@ -148,4 +148,22 @@ For a broader view of how your server fits into the MCP server ecosystem, read [
 
 ## Frequently Asked Questions
 
-{/* Rendered from faqItems by CMS */}
+### Do I need to publish my MCP server to use it with Claude?
+
+No. You can run a local MCP server by pointing your AI client config at the script path directly. Publishing to PyPI or a directory is optional and only needed if you want others to use it.
+
+### Can a Python MCP server call external APIs or make network requests?
+
+Yes. The server runs as a normal Python process, so you can use requests, httpx, or any async HTTP client. Just import them as usual and call them inside your tool handler functions.
+
+### How do I pass secrets like API keys to my custom MCP server?
+
+Pass them as environment variables in your claude_desktop_config.json under the 'env' key for that server entry. Avoid hardcoding credentials in the script itself.
+
+### What is the difference between a tool and a resource in the MCP Python SDK?
+
+Tools are functions the agent can call to take actions or fetch data on demand. Resources are static or semi-static content the agent can read, like a file or a config document. Most custom servers start with tools and add resources later if needed.
+
+### Can I write an MCP server that wraps an existing Python script I already have?
+
+Yes, and it is one of the most common use cases. Wrap your existing functions as MCP tool handlers, add the server boilerplate, and your script becomes accessible to any MCP-compatible AI client.

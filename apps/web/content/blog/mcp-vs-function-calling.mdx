@@ -65,3 +65,19 @@ It also wins for integrations that require stateful context. MCP servers can mai
 The [ai-ml category](/categories/ai-ml) in MCPFind has 715 servers, and the highest-starred entries (led by Netdata at 78,193 GitHub stars) are production infrastructure tools that pre-date MCP but now expose an MCP interface because it reaches more clients with less code. That pattern, existing tooling gaining an MCP layer, is the most common production adoption path we see in the directory. See also our breakdown of [MCP vs API integration](/blog/mcp-vs-api-integration) for the broader architectural decision.
 
 ## Frequently Asked Questions
+
+### Can I use MCP and function calling together in the same application?
+
+Yes. Many production agents do exactly this. MCP handles external tool access (databases, APIs, file systems) while function calling handles in-process logic that does not need a separate server. The two layers complement each other rather than compete.
+
+### Does MCP work with models other than Claude?
+
+Yes. MCP is a open protocol not tied to Anthropic. OpenAI, Google DeepMind, and several open-source model providers have implemented MCP clients. If you build an MCP server, it works with any client that supports the protocol, which is the main architectural advantage over function calling.
+
+### Is there a performance cost to using MCP instead of function calling?
+
+There is some overhead from the client-server transport layer. For stdio-based servers on the same machine, the latency is typically under 10ms. For HTTP-based remote servers, latency depends on network conditions. For most agent workflows, this is not a bottleneck, but it matters for high-frequency tool calls.
+
+### How does the MCPFind directory categorize servers by transport type?
+
+MCPFind tracks whether servers use stdio or HTTP transport based on their configuration metadata. The devtools category, which has 2,462 servers, skews heavily toward stdio since most developer tool servers run locally.

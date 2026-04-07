@@ -62,3 +62,19 @@ Permission errors happen when a bundle tries to access folders Claude Desktop is
 If an extension installs but its tools do not appear in conversation, try toggling it off and on in Settings > Extensions. Claude Desktop caches tool definitions at startup, and a manual toggle forces a refresh. If the problem persists, removing and reinstalling the extension clears any corrupted state in the local extensions directory.
 
 ## Frequently Asked Questions
+
+### What is the difference between a .mcpb file and a .dxt file?
+
+They are the same format under different names. Anthropic renamed .dxt to .mcpb in late 2025 to match the MCP Bundle branding. Claude Desktop accepts both extensions, so existing .dxt bundles still install without changes.
+
+### Do I need to install Node.js or Python to use a .mcpb extension?
+
+No. Claude Desktop includes a built-in Node.js runtime, so Node-based extensions work without any system-level installation. Python extensions do require Python on your machine, and the bundle's manifest will specify that requirement.
+
+### Can I install a .mcpb extension on Windows?
+
+Yes. The .mcpb format is cross-platform. Claude Desktop on Windows and macOS both support the Extensions tab where you can install .mcpb bundles. Linux support depends on the Claude Desktop release schedule.
+
+### How is a .mcpb file different from adding a server manually in claude_desktop_config.json?
+
+A .mcpb file bundles the server code and dependencies into one file, so there is no config editing required. Manual config gives you more control over arguments and environment variables, but requires you to have the server installed separately.

@@ -80,3 +80,19 @@ Cursor's Agent mode runs MCP servers as background processes per workspace. VS C
 Windsurf's Cascade agent handles autonomous multi-step work well out of the box. For workflows where the agent queries a database, consults documentation, and runs tests in sequence without manual prompting between steps, Windsurf's runtime suits that pattern. The server configs you write are portable across editors. The decision comes down to which agentic runtime fits how you work.
 
 ## Frequently Asked Questions
+
+### Does Windsurf support all MCP servers, or only specific ones?
+
+Windsurf supports any server that uses stdio or Streamable HTTP transport, which covers the large majority of servers in the MCPFind directory. Servers that rely on client-specific protocol extensions not yet implemented in Windsurf's agent may behave differently.
+
+### Where is the Windsurf MCP config file on Windows?
+
+On Windows, the config lives at %USERPROFILE%\\.codeium\\windsurf\\mcp_config.json. The JSON structure is identical to the macOS version.
+
+### Can I run multiple MCP servers simultaneously in Windsurf?
+
+Yes. Add each server as a separate key under the mcpServers object. Windsurf starts all configured servers when the editor launches and the Cascade agent can call any of them.
+
+### Do MCP server configs in Windsurf share settings with Cursor or VS Code?
+
+No. Each editor maintains its own config file. Cursor uses .cursor/mcp.json, VS Code uses settings.json or a workspace file, and Windsurf uses ~/.codeium/windsurf/mcp_config.json. Copy entries across editors if you use more than one.

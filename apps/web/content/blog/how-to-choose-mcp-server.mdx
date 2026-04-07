@@ -77,4 +77,18 @@ The strongest signal is the maintainer. A server published and maintained by the
 
 ## Frequently Asked Questions
 
-{/* Rendered from faqItems by CMS */}
+### Can I install more than one MCP server at the same time?
+
+Yes. Most AI clients support multiple servers running simultaneously. You add each one as a separate entry in your config file, and the agent can use tools from all of them in the same conversation.
+
+### What happens if I install an MCP server and never use it?
+
+Unused servers add a small startup overhead because they launch as background processes when your AI client opens. If you are not actively using a server, remove its config entry to keep startup fast.
+
+### How do I know if an MCP server will work with my AI client?
+
+Most servers that use stdio transport work with Claude Desktop, Cursor, VS Code, and other major clients. Check the server's README for a compatibility note. If it lists a specific client, it likely works with others too since the protocol is standardized.
+
+### Should I start with one MCP server or install several at once?
+
+Start with one that matches your most common task. Get comfortable with how tools show up in your AI client and how to instruct the agent to use them. Adding a second server after that is fast since you already understand the config pattern.
