@@ -25,7 +25,7 @@ function calculateReadingTime(content: string): number {
   return Math.ceil(words / 200);
 }
 
-export function getAllPosts(options?: { limit?: number; offset?: number }): BlogPost[] {
+export function getAllPosts(options?: { limit?: number; offset?: number; category?: string }): BlogPost[] {
   if (!fs.existsSync(CONTENT_DIR)) return [];
 
   const files = fs.readdirSync(CONTENT_DIR).filter(f => f.endsWith('.mdx'));
@@ -49,6 +49,11 @@ export function getAllPosts(options?: { limit?: number; offset?: number }): Blog
   // Filter drafts in production
   if (process.env.NODE_ENV === 'production') {
     posts = posts.filter(p => !p.frontmatter.draft);
+  }
+
+  // Filter by category
+  if (options?.category) {
+    posts = posts.filter(p => p.frontmatter.category === options.category);
   }
 
   // Sort by date descending
