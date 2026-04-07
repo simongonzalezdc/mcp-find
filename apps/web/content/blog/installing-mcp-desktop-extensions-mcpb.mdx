@@ -1,0 +1,64 @@
+---
+title: "Installing MCP Desktop Extensions: The .mcpb File Explained"
+description: "Learn what .mcpb files are, how to install MCP desktop extensions in Claude Desktop, and which servers ship as one-click bundles."
+excerpt: "The .mcpb format packages an entire MCP server into a single installable bundle for Claude Desktop. This guide explains what the format does, how to install it, and how it differs from manual server configuration. No terminal required."
+date: "2026-04-07"
+updatedAt: "2026-04-07"
+author: "Adam Bush"
+authorUrl: "https://mcpfind.org/authors/adam-bush"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/PLACEHOLDER"
+tags:
+  - "mcp"
+  - "beginner"
+  - "claude-desktop"
+  - "installation"
+category: "devtools"
+focusKeyword: "MCP desktop extensions install"
+draft: true
+cornerstone: false
+faqItems:
+  - question: "What is the difference between a .mcpb file and a .dxt file?"
+    answer: "They are the same format under different names. Anthropic renamed .dxt to .mcpb in late 2025 to match the MCP Bundle branding. Claude Desktop accepts both extensions, so existing .dxt bundles still install without changes."
+  - question: "Do I need to install Node.js or Python to use a .mcpb extension?"
+    answer: "No. Claude Desktop includes a built-in Node.js runtime, so Node-based extensions work without any system-level installation. Python extensions do require Python on your machine, and the bundle's manifest will specify that requirement."
+  - question: "Can I install a .mcpb extension on Windows?"
+    answer: "Yes. The .mcpb format is cross-platform. Claude Desktop on Windows and macOS both support the Extensions tab where you can install .mcpb bundles. Linux support depends on the Claude Desktop release schedule."
+  - question: "How is a .mcpb file different from adding a server manually in claude_desktop_config.json?"
+    answer: "A .mcpb file bundles the server code and dependencies into one file, so there is no config editing required. Manual config gives you more control over arguments and environment variables, but requires you to have the server installed separately."
+---
+
+If you have tried adding an MCP server to Claude Desktop and ended up editing a JSON config file, running npm commands, and wondering where things went wrong, desktop extensions are the fix. The `.mcpb` format bundles an entire MCP server into a single file you install with a few clicks, the same way you install a browser extension. This guide covers what the format is, how to install one, and what to look for when choosing a bundle-based server from the [MCPFind devtools category](/categories/devtools). If you are new to MCP entirely, start with [what MCP is](/blog/what-is-mcp) first.
+
+## What Is a .mcpb File and Why Does It Exist?
+
+A `.mcpb` file is a zip archive that packages an MCP server together with its dependencies and a `manifest.json` that tells Claude Desktop how to run it. The format was introduced by Anthropic to solve the most common complaint about MCP setup: too many manual steps. Before desktop extensions, connecting a server meant editing `claude_desktop_config.json`, installing Node or Python packages, and restarting the app. Bundles collapse all of that into a single install action.
+
+The `.mcpb` name replaced an earlier `.dxt` extension in late 2025. Both work in Claude Desktop, so if you see `.dxt` files in older documentation, they install the same way. Inside every bundle you will find a `manifest.json` (which names the server, declares its tools, and specifies runtime requirements) plus the server code itself, whether that is a JavaScript file, a Python script, or a compiled binary. Claude Desktop ships with a built-in Node.js runtime, so Node-based bundles run without any extra software on your system.
+
+## How to Install a .mcpb Extension in Claude Desktop
+
+Installing a desktop extension takes under a minute if you have the bundle file ready. Open Claude Desktop and go to **Settings > Extensions**. You will see a Browse and Install Extension button. Click it, select the `.mcpb` file from your downloads folder, and confirm the install.
+
+Claude Desktop reads the manifest, copies the server files to a local extensions directory, and makes the server available immediately. You do not need to restart the app in most cases. If the server needs an API key (a search server or a cloud service, for example), a configuration prompt appears right after install. You fill in the value once, and the extension stores it securely.
+
+To verify the install worked, open a new conversation and type something the server handles. A search extension should respond to web lookup requests; a file server should be able to list folders. If nothing happens, check Settings > Extensions to confirm the toggle is on for that extension.
+
+## Which Servers Ship as .mcpb Bundles?
+
+Not all 5,296 servers indexed by MCPFind come as `.mcpb` bundles. Most are traditional servers that require manual configuration. Bundles tend to appear for widely-used, general-purpose tools where the developer wants to lower the barrier for non-technical users.
+
+The [devtools category](/categories/devtools) on MCPFind has 2,462 servers and is the most likely place to find bundle-packaged options, since developer tool authors adopt the format quickly. Search, productivity, and documentation servers also publish bundles. When browsing MCPFind, look for servers that mention "desktop extension," "one-click install," or `.mcpb` in their description. The Anthropic engineering blog maintains a reference list of officially supported bundles if you want a curated starting point.
+
+If a server you want does not ship as a bundle, you are not out of luck. Manual configuration through `claude_desktop_config.json` still works for every server, and the [getting started with MCP in Claude](/blog/getting-started-with-mcp-in-claude) guide walks through that process step by step.
+
+## What Can Go Wrong During Installation?
+
+Desktop extensions are more reliable than manual setup, but a few failure modes are worth knowing. The most common issue is a missing runtime. Python-based bundles require Python to be installed on your machine. If Claude Desktop cannot find the Python executable, the extension will install but fail silently when you try to use it. Check the manifest's `runtime` field to know what the extension needs before installing.
+
+Permission errors happen when a bundle tries to access folders Claude Desktop is not allowed to reach. On macOS, Full Disk Access settings control this. On Windows, the issue usually involves UAC restrictions on certain directories. Granting the necessary permission in System Settings and reinstalling the extension typically resolves it.
+
+If an extension installs but its tools do not appear in conversation, try toggling it off and on in Settings > Extensions. Claude Desktop caches tool definitions at startup, and a manual toggle forces a refresh. If the problem persists, removing and reinstalling the extension clears any corrupted state in the local extensions directory.
+
+## Frequently Asked Questions

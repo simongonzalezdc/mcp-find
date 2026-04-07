@@ -1,0 +1,58 @@
+---
+title: "Best MCP Servers for Web Search: Top Picks From 433 Options"
+description: "MCPFind indexes 433 web search MCP servers. Compare top options by GitHub stars, API requirements, and setup complexity to find the right one for Claude."
+excerpt: "Giving Claude the ability to search the web requires an MCP server, and MCPFind indexes 433 of them. This guide compares the top options by star count, API requirements, and real-world setup complexity so you can connect live search to your AI assistant without guesswork."
+date: "2026-04-07"
+updatedAt: "2026-04-07"
+author: "Adam Bush"
+authorUrl: "https://mcpfind.org/authors/adam-bush"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/PLACEHOLDER"
+tags:
+  - "mcp"
+  - "beginner"
+  - "web-search"
+  - "tools"
+category: "search"
+focusKeyword: "best MCP web search servers"
+draft: true
+cornerstone: false
+faqItems:
+  - question: "Do I need a paid API key to use a web search MCP server?"
+    answer: "It depends on the server. Some, like the Brave Search MCP server, have a free tier with limited monthly queries. Tavily requires a paid subscription above its free tier. Others, like Exa, offer pay-per-use billing. Always check the server's README for current pricing before setting up."
+  - question: "Can I use a web search MCP server with both Claude Desktop and Cursor?"
+    answer: "Yes. MCP servers use a standard protocol, so the same server configuration works across Claude Desktop, Cursor, Windsurf, and VS Code with the MCP extension. You copy your config block into each client's settings file."
+  - question: "What is the difference between a web search server and a web browsing server?"
+    answer: "A web search server calls a search API and returns a list of results with titles and snippets. A web browsing server fetches the full content of a specific URL. You often use both together: search first, then browse the most relevant result for full context."
+  - question: "Why does my search MCP server return no results sometimes?"
+    answer: "The most common cause is an expired or rate-limited API key. Check whether your key is still valid in your provider's dashboard. The second most common cause is a query your search provider filters as low-quality, which produces an empty result set rather than an error."
+---
+
+Adding web search to Claude makes it genuinely more useful for anything time-sensitive: current events, live documentation, pricing, and anything that changes after a model's training cutoff. You do not get that capability by default. You need to connect a web search MCP server. MCPFind indexes 433 servers in the [search category](/categories/search), ranging from single-API wrappers to multi-source aggregators. If you are new to MCP, read [what MCP is](/blog/what-is-mcp) before diving in. This guide focuses on which server to pick and why.
+
+## Why Web Search Belongs in Your MCP Setup
+
+Web search is the most commonly requested MCP capability after file access. The reason is practical: AI assistants without live search give you confident-sounding answers about things that changed months ago. A search server does not make Claude smarter. It gives Claude access to current information when a question requires it.
+
+The difference is obvious on time-sensitive tasks. With a search server connected, you can ask Claude to compare today's prices on a product, check whether a library's latest version has a breaking change, pull the current status of a GitHub issue, or summarize recent news you are tracking. None of that works from the base model alone.
+
+Setup is simpler than it looks. Most search servers take one environment variable (your API key) and a few lines of config in `claude_desktop_config.json`. The [getting started with MCP in Claude](/blog/getting-started-with-mcp-in-claude) guide covers the config file format step by step. Once connected, you do not need to invoke the server explicitly. Claude pulls search results automatically when a question needs current data.
+
+## Which Search MCP Servers Lead by GitHub Stars
+
+MCPFind's star data points to a clear top tier in the search category. The [Agent Skills Search Server](/servers/ai-com-mcp-skills-search) leads with 14,109 GitHub stars, followed by [Airweave Search](/servers/io-github-airweave-ai-search) at 6,092 stars. Below those two, Tavily, Brave Search, and Exa each sit in the 200-to-1,000 star range and represent the three most commonly configured options for individual use in Claude Desktop.
+
+Agent Skills Search and Airweave are infrastructure-level tools built for agent pipelines, not personal use. If you are building an AI application that needs search as a backend service, they are worth evaluating. For connecting Claude Desktop to the web, they are more than needed.
+
+Tavily is the most popular choice for developers who want a single-provider setup with strong retrieval quality. Their MCP server handles query formatting and result ranking automatically, which reduces the prompt engineering needed to get clean answers. Brave Search offers a privacy-focused alternative with a free tier of 2,000 queries per month. Exa performs better than keyword-based APIs on semantic questions like "who wrote about X in the last month."
+
+## How to Evaluate a Search Server Before You Commit
+
+Star counts matter, but they do not tell the whole story. Before connecting any search server, check four things. First, what search provider does it call? A server wrapping Google Custom Search behaves very differently from one using Brave or DuckDuckGo. Second, does it return full page content or just snippets? Snippet-only responses are faster but miss detail.
+
+Third, what does rate limiting look like? A server that silently fails after hitting its limit is harder to debug than one that surfaces a clear error message. Fourth, does the server cache results? Caching reduces API costs but can return stale data on fast-moving topics.
+
+For most beginners, Brave Search's free tier is the right starting point. You get real results without a credit card, and the server is straightforward to configure. Once you hit the monthly query limit or need higher-quality retrieval, Tavily is a natural next step. Browse the full [search category](/categories/search) on MCPFind to compare options with filtering by star count.
+
+## Frequently Asked Questions

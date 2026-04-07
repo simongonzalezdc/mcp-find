@@ -1,0 +1,82 @@
+---
+title: "How to Configure MCP Servers in Windsurf IDE (2026)"
+description: "Configure MCP servers in Windsurf IDE step by step. Set up devtools, database, and search servers in mcp_config.json to extend the Cascade agent's reach."
+excerpt: "Windsurf's Cascade agent supports MCP through a dedicated config file. This guide covers the config file location, transport modes (stdio vs HTTP), adding your first server, and which of MCPFind's 5,296 indexed servers make the most sense for a developer workflow in Windsurf."
+date: "2026-04-07"
+updatedAt: "2026-04-07"
+author: "Gus Marquez"
+authorUrl: "https://mcpfind.org/authors/gus-marquez"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/gusmar2017"
+tags:
+  - "mcp"
+  - "developer"
+  - "windsurf"
+  - "ide-setup"
+category: "devtools"
+focusKeyword: "MCP Windsurf IDE setup"
+draft: true
+cornerstone: false
+faqItems:
+  - question: "Does Windsurf support all MCP servers, or only specific ones?"
+    answer: "Windsurf supports any server that uses stdio or Streamable HTTP transport, which covers the large majority of servers in the MCPFind directory. Servers that rely on client-specific protocol extensions not yet implemented in Windsurf's agent may behave differently."
+  - question: "Where is the Windsurf MCP config file on Windows?"
+    answer: "On Windows, the config lives at %USERPROFILE%\\.codeium\\windsurf\\mcp_config.json. The JSON structure is identical to the macOS version."
+  - question: "Can I run multiple MCP servers simultaneously in Windsurf?"
+    answer: "Yes. Add each server as a separate key under the mcpServers object. Windsurf starts all configured servers when the editor launches and the Cascade agent can call any of them."
+  - question: "Do MCP server configs in Windsurf share settings with Cursor or VS Code?"
+    answer: "No. Each editor maintains its own config file. Cursor uses .cursor/mcp.json, VS Code uses settings.json or a workspace file, and Windsurf uses ~/.codeium/windsurf/mcp_config.json. Copy entries across editors if you use more than one."
+---
+
+Windsurf added native MCP support in early 2026, joining Cursor and VS Code as a first-class host for Model Context Protocol servers. If you use the Cascade agent for coding tasks, MCP gives it access to external tools: query a database, read documentation, search the web, all without leaving the editor. MCPFind currently indexes 5,296 MCP servers across 21 categories. This guide walks through the config file location, the two transport modes, adding your first server, and choosing which servers fit a developer workflow best. If you are new to MCP, start with [What Is MCP?](/blog/what-is-mcp).
+
+## What Is MCP Support in Windsurf?
+
+MCP support in Windsurf lets the Cascade agent call external tools through the Model Context Protocol. The agent sees every tool a configured server exposes and can invoke them during multi-step tasks, so you stop copying database outputs or search results into the chat window and let the agent fetch them directly.
+
+Windsurf supports two transport modes. Stdio servers run as local processes; the editor starts them at launch and communicates through standard input and output. Streamable HTTP servers run as separate processes, either on your machine or a remote host, and communicate over HTTP. Most of the 2,462 servers in MCPFind's [devtools category](/categories/devtools) use stdio transport. HTTP transport is more common for hosted or team-shared tooling that multiple engineers need to access from a central endpoint.
+
+The config changes take effect without restarting the editor. Windsurf watches the config file and restarts context server processes when it detects a modification.
+
+## How to Set Up Your First MCP Server in Windsurf
+
+The Windsurf MCP config lives at `~/.codeium/windsurf/mcp_config.json` on macOS and Linux. On Windows, the path is `%USERPROFILE%\.codeium\windsurf\mcp_config.json`. Create the file if it does not exist; Windsurf does not generate it on first launch.
+
+Open the file and add a `mcpServers` object. Each key is the server name; the value defines the startup command. The [Supabase MCP server](/servers/com-supabase-mcp) tops the databases category on MCPFind with 2,556 GitHub stars and is a practical starting point for any project that uses Supabase for its data layer:
+
+```json
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase@latest"],
+      "env": {
+        "SUPABASE_ACCESS_TOKEN": "your-access-token"
+      }
+    }
+  }
+}
+```
+
+Save the file. The Cascade agent picks up the new tools on the next chat session. To add more servers, include additional keys under `mcpServers`. For HTTP-based servers, replace `command` and `args` with a `url` key pointing to the server's endpoint. The rest of the config structure stays the same.
+
+## Which MCP Servers Work Best With Windsurf?
+
+Three categories cover most developer workflows. Database servers let the Cascade agent read schema and draft queries inline. The [databases category](/categories/databases) on MCPFind has 235 servers; beyond Supabase, there are dedicated options for PostgreSQL, MySQL, MongoDB, and SQLite.
+
+Documentation servers pull official docs into context during generation. MCPFind's documentation category holds 56 servers, with Microsoft Learn MCP at the top (1,492 stars) for teams using Azure or .NET.
+
+Search servers give the agent real-time web access without tab switching. The search category indexes 433 servers across web search APIs, news feeds, and technical documentation sources. Adding one lets the agent look up library releases or recent API changes as part of any agentic task.
+
+One server from each of these three categories handles the most common gaps in agentic coding: missing schema context, stale documentation, and unknown dependencies.
+
+## How Does Windsurf MCP Compare to Cursor and VS Code?
+
+The JSON config format is identical across Windsurf, Cursor, and VS Code. Any server you have already configured in one editor works in the others with a copy of the config block. The differences are in the agent layer, not the protocol.
+
+Cursor's Agent mode runs MCP servers as background processes per workspace. VS Code's Copilot agent supports the same transports but requires enabling MCP explicitly in settings; support was added later than in either Cursor or Windsurf. Both editors are covered in detail in the guides for [MCP in Cursor](/blog/how-to-use-mcp-with-cursor) and [MCP in VS Code](/blog/how-to-use-mcp-with-vscode).
+
+Windsurf's Cascade agent handles autonomous multi-step work well out of the box. For workflows where the agent queries a database, consults documentation, and runs tests in sequence without manual prompting between steps, Windsurf's runtime suits that pattern. The server configs you write are portable across editors. The decision comes down to which agentic runtime fits how you work.
+
+## Frequently Asked Questions
