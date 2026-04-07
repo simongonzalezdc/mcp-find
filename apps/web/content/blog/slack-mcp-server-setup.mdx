@@ -86,3 +86,23 @@ The server only reads what the bot can see. Start by inviting the bot to your tw
 For a similar connection with a document-based tool, the guide for [connecting Notion to Claude with MCP](/blog/connect-notion-mcp-ai-agents) covers the same pattern for knowledge management workflows.
 
 ## Frequently Asked Questions
+
+### Does setting up Slack MCP require admin access to my workspace?
+
+You do not need admin access to create a Slack app. However, if your workspace has app installation approval enabled, a workspace admin will need to approve it before you can generate the bot token.
+
+### Can the Slack MCP server post messages to channels?
+
+The standard setup gives read-only access. If you add the chat:write scope to your bot token, the server can post messages. Most teams start with read-only and expand permissions deliberately.
+
+### Does Slack MCP work with private channels?
+
+Yes, but only for channels the bot has been invited to. Private channels are not visible to the bot by default. Use /invite @botname inside any private channel you want Claude to access.
+
+### Can I use the same Slack MCP config in Cursor or Windsurf?
+
+Yes. The mcpServers config block is identical across Claude Desktop, Cursor, VS Code, and Windsurf. Copy the same block into your editor's MCP config file and it works without modification.
+
+### What happens if I remove the bot from a channel after setup?
+
+The bot loses access to that channel immediately. Claude cannot read messages from channels the bot has been removed from, even if the token is still valid.

@@ -79,3 +79,19 @@ For Cloudflare-first teams, the official server is the clear choice. For AWS tea
 Read-only servers are the right default for shared environments. Granting write access through an MCP server requires the same approval and rollback process you would apply to any deployment automation. Browse the [cloud category on MCPFind](/categories/cloud) with the star filter set to 100+ to see the options that have already proven adoption in production environments.
 
 ## Frequently Asked Questions
+
+### Do cloud MCP servers require broad IAM permissions?
+
+Not necessarily. Most AWS MCP implementations let you scope permissions through IAM roles. Apply least-privilege: grant only the specific actions the server's tools require, not Administrator or PowerUser access. A CloudWatch-only server should only need cloudwatch:GetMetricData and similar read-only permissions.
+
+### Is there an official AWS MCP server from Amazon?
+
+AWS does not maintain a general-purpose first-party MCP server for infrastructure management as of April 2026. Community-built servers cover the most common services. For Amazon Bedrock specifically, AWS has published integration guidance for MCP client connections.
+
+### Can I use a cloud MCP server in a shared team environment?
+
+Yes, but HTTP-transport servers need additional access control. Network-accessible MCP servers should sit behind authentication middleware restricted by role or IP. Stdio servers are easier to isolate since they run per-user on the local machine.
+
+### How does the Cloudflare MCP server differ from using the Cloudflare API directly?
+
+The Cloudflare MCP server exposes specific tools for common operations (zone management, DNS records, Workers deployment) rather than the full API surface. It works directly from Claude Desktop without custom code, and the tool names map to operations engineers perform daily.

@@ -56,3 +56,19 @@ Third, what does rate limiting look like? A server that silently fails after hit
 For most beginners, Brave Search's free tier is the right starting point. You get real results without a credit card, and the server is straightforward to configure. Once you hit the monthly query limit or need higher-quality retrieval, Tavily is a natural next step. Browse the full [search category](/categories/search) on MCPFind to compare options with filtering by star count.
 
 ## Frequently Asked Questions
+
+### Do I need a paid API key to use a web search MCP server?
+
+It depends on the server. Some, like the Brave Search MCP server, have a free tier with limited monthly queries. Tavily requires a paid subscription above its free tier. Others, like Exa, offer pay-per-use billing. Always check the server's README for current pricing before setting up.
+
+### Can I use a web search MCP server with both Claude Desktop and Cursor?
+
+Yes. MCP servers use a standard protocol, so the same server configuration works across Claude Desktop, Cursor, Windsurf, and VS Code with the MCP extension. You copy your config block into each client's settings file.
+
+### What is the difference between a web search server and a web browsing server?
+
+A web search server calls a search API and returns a list of results with titles and snippets. A web browsing server fetches the full content of a specific URL. You often use both together: search first, then browse the most relevant result for full context.
+
+### Why does my search MCP server return no results sometimes?
+
+The most common cause is an expired or rate-limited API key. Check whether your key is still valid in your provider's dashboard. The second most common cause is a query your search provider filters as low-quality, which produces an empty result set rather than an error.

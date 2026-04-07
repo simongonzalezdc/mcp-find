@@ -68,3 +68,23 @@ Ask one question: is the caller a human-written program or an AI agent?
 Human-written program with fixed logic - use direct API integration. AI agent making runtime decisions based on user intent - use MCP. The two approaches frequently coexist in the same system. Your backend uses direct API calls for all application logic. Your AI coding assistant uses MCP servers to interact with those same services during development and debugging. There is no conflict. The protocol layer and the application layer serve different masters.
 
 ## Frequently Asked Questions
+
+### Does using an MCP server replace the underlying API?
+
+No. MCP servers call the underlying API on your behalf. The Supabase MCP server, for example, makes standard Supabase API calls internally. MCP is the interface layer between the AI client and the API, not a replacement for it.
+
+### Can I build my own MCP server for an internal API?
+
+Yes. The MCP SDK is available in TypeScript and Python. You define tools that correspond to your API endpoints, handle authentication inside the server, and expose clean tool names to the AI client. This is the standard pattern for internal tooling.
+
+### Is MCP more secure than giving an AI direct API access?
+
+MCP can be more secure because you control exactly which operations the server exposes. A read-only MCP server for your database prevents writes even if the underlying credentials allow them. That scoping is harder to enforce with a raw API key.
+
+### What languages are MCP servers written in?
+
+MCPFind indexes servers written in TypeScript (315 servers), Python (233), JavaScript (109), and Go (17), among others. TypeScript dominates because the official Anthropic SDK has first-class TypeScript support.
+
+### When is a direct API integration better than MCP?
+
+When you are building a deterministic application - not an AI agent - direct API calls are simpler and more predictable. MCP shines when the caller is an AI that needs to decide dynamically which tools to use based on user intent.

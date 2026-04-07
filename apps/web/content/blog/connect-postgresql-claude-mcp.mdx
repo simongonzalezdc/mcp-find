@@ -91,4 +91,18 @@ This is a step up from pasting data into chat manually. If your data lives in a 
 
 ## Frequently Asked Questions
 
-{/* Rendered from faqItems by CMS */}
+### Do I need a running PostgreSQL server to use a database MCP server?
+
+Yes. The MCP server is a connector, not a database itself. You need an accessible PostgreSQL instance (local, cloud-hosted, or a service like Supabase) and provide its connection string in the config.
+
+### Can the PostgreSQL MCP server modify data, or is it read-only?
+
+Most PostgreSQL MCP servers support both read and write operations. You can restrict the database user to SELECT-only if you want the agent to query without making changes. Check the specific server's documentation for write capabilities.
+
+### Will the MCP server expose my entire database to Claude?
+
+Only the schemas and tables the connection string user has access to are visible. Use a dedicated database role with minimal permissions. Grant access to only the tables the agent needs.
+
+### Is there a latency cost to querying Postgres through MCP versus a direct query?
+
+There is a small overhead because the agent constructs the query, the MCP server executes it, and results pass through the stdio transport layer. For interactive workflows this is negligible, but batch processing is better handled directly.
