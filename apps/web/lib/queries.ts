@@ -75,7 +75,20 @@ async function _listServers(params: ServerListParams): Promise<ServerListRespons
 
 export const listServers = cache(
   (params: ServerListParams): Promise<ServerListResponse> => {
-    const cacheKey = [params.category ?? '', params.q ?? '', String(params.page ?? 1), String(params.limit ?? DEFAULT_PAGE_SIZE), params.sort ?? ''].join('\x00');
+    const cacheKey = [
+      params.category ?? '',
+      params.q ?? '',
+      String(params.page ?? 1),
+      String(params.limit ?? DEFAULT_PAGE_SIZE),
+      params.sort ?? '',
+      (params.packageTypes ?? []).join(','),
+      (params.languages ?? []).join(','),
+      params.hasTools ? '1' : '',
+      params.hasResources ? '1' : '',
+      params.hasPrompts ? '1' : '',
+      params.isOfficial ? '1' : '',
+      params.featured ? '1' : '',
+    ].join('\x00');
     return unstable_cache(
       () => _listServers(params),
       ['list-servers', cacheKey],
