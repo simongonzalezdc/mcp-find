@@ -1,0 +1,67 @@
+---
+title: "How to Debug MCP Server Errors in Claude Desktop"
+description: "Fix common MCP server errors in Claude Desktop. Covers connection refused, tool not found, auth failures, and transport issues with step-by-step solutions."
+excerpt: "MCP server errors in Claude Desktop can be frustrating, especially when the error messages are vague. This guide walks through the most common failures, from connection refused to tool not found, and shows you exactly where to look and what to fix. Tested against real servers from a directory of 5,778 MCP servers."
+date: "2026-04-10"
+updatedAt: "2026-04-10"
+author: "Adam Bush"
+authorUrl: "https://mcpfind.org/authors/adam-bush"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/PLACEHOLDER"
+tags:
+  - "mcp"
+  - "beginner"
+  - "troubleshooting"
+  - "claude-desktop"
+  - "debugging"
+category: "devtools"
+focusKeyword: "debug MCP server errors Claude Desktop"
+draft: false
+cornerstone: false
+faqItems:
+  - question: "Where are MCP server logs stored in Claude Desktop?"
+    answer: "On macOS, MCP server logs are stored in ~/Library/Logs/Claude/. On Windows, check %APPDATA%/Claude/logs/. Each server writes its own log file, and the main Claude Desktop log includes connection events for all configured servers."
+  - question: "Why does my MCP server show as connected but no tools appear?"
+    answer: "This usually means the server started successfully but did not register any tools during initialization. Check that the server code actually calls the tool registration method. Some servers only expose resources or prompts, not tools, which means they will not show entries in the tool picker."
+  - question: "Can I run two MCP servers that use the same port?"
+    answer: "If both servers use stdio transport, ports are not involved, so there is no conflict. If either server uses SSE or HTTP transport on a specific port, you need to assign different ports to each. Port conflicts will cause the second server to fail silently on startup."
+  - question: "How do I test an MCP server without Claude Desktop?"
+    answer: "You can test MCP servers using the MCP Inspector tool, which runs in your terminal and sends requests to the server directly. This lets you verify the server works before adding it to Claude Desktop, isolating whether the problem is the server itself or the client configuration."
+---
+
+If you have tried adding an MCP server to Claude Desktop and hit a wall of confusing errors, you are not alone. MCP server troubleshooting is one of the least documented parts of the protocol, and most error messages do not tell you what actually went wrong. This guide covers the errors we see most often across the 5,778 servers indexed on MCPFind, with specific fixes for each one. Whether you are setting up your first server or your fifth, these steps will save you time.
+
+## What Does "Connection Refused" Mean for MCP Servers?
+
+If Claude Desktop shows a "connection refused" or "failed to start" error, the server process did not launch. The most common cause is a missing dependency. MCP servers built with Node.js need `npx` or `node` available in your system PATH. Python-based servers need `python3` or `uv` installed. Check your Claude Desktop config file at `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS and verify the `command` field points to a binary that exists. Try running the command manually in your terminal first. If it works in terminal but fails in Claude Desktop, the issue is usually a PATH difference between your shell environment and the app's environment. MCPFind indexes servers written in TypeScript (315), Python (233), and JavaScript (109), so you will encounter different runtime requirements depending on which server you choose. Our [getting started guide](/blog/getting-started-with-mcp-in-claude) covers initial setup if you are working from scratch.
+
+## How Do You Fix "Tool Not Found" Errors?
+
+A "tool not found" error appears when Claude tries to call a tool that the server did not register. This happens in three common scenarios. First, the server crashed after startup but before tool registration completed. Check the server logs in `~/Library/Logs/Claude/` to see if there is an unhandled exception or a missing dependency. Second, the server version changed and renamed or removed the tool. If you updated a server recently, check its changelog for breaking changes. Third, the server requires environment variables that you did not set. Many servers in the MCPFind [devtools category](/categories/devtools) (2,640 servers indexed) need API keys or config paths passed through the `env` field in your config. Without them, the server starts but skips tool registration entirely. For more on how MCP servers expose tools, see the [MCP protocol overview](/blog/what-is-mcp).
+
+## What Causes Authentication and Permission Errors?
+
+Authentication errors show up as "unauthorized," "403," or "invalid API key" messages in server logs. If the server connects to an external service like GitHub, Slack, or a database, it needs valid credentials in its environment variables. Open your config file and check the `env` section for the server. Make sure API keys are not expired and have the right scopes. A common mistake is copying a key with trailing whitespace or newline characters. For database servers in the [databases category](/categories/databases) (244 servers on MCPFind), connection strings also cause failures. Double-check the host, port, username, and database name. If you are connecting to a local PostgreSQL instance, make sure the database is running and accepting connections. Permission errors can also come from file system access. Servers that read or write files need access to the directories you specify in their arguments. On macOS, this sometimes requires granting Terminal or Claude Desktop access in System Settings under Privacy and Security.
+
+## How Do You Read MCP Server Logs Effectively?
+
+The fastest path to fixing any MCP error is reading the right log file. Claude Desktop writes logs to `~/Library/Logs/Claude/` on macOS. Each MCP server gets its own log file named after the server key in your config. Open the log file and scroll to the bottom for the most recent error. Look for lines containing "error," "exception," or "ENOENT" (which means a file or binary was not found). If the log is empty, the server never started. Go back to your config file and verify the command and args fields. You can also enable verbose logging on many servers by adding a `--verbose` or `--debug` flag to the args array. The MCPFind directory at [mcpfind.org](/) lists transport type and configuration details for each of its 5,778 indexed servers, which helps you verify you are using the right setup before you start debugging.
+
+## Frequently Asked Questions
+
+### Where are MCP server logs stored in Claude Desktop?
+
+On macOS, MCP server logs are stored in ~/Library/Logs/Claude/. On Windows, check %APPDATA%/Claude/logs/. Each server writes its own log file, and the main Claude Desktop log includes connection events for all configured servers.
+
+### Why does my MCP server show as connected but no tools appear?
+
+This usually means the server started successfully but did not register any tools during initialization. Check that the server code actually calls the tool registration method. Some servers only expose resources or prompts, not tools, which means they will not show entries in the tool picker.
+
+### Can I run two MCP servers that use the same port?
+
+If both servers use stdio transport, ports are not involved, so there is no conflict. If either server uses SSE or HTTP transport on a specific port, you need to assign different ports to each. Port conflicts will cause the second server to fail silently on startup.
+
+### How do I test an MCP server without Claude Desktop?
+
+You can test MCP servers using the MCP Inspector tool, which runs in your terminal and sends requests to the server directly. This lets you verify the server works before adding it to Claude Desktop, isolating whether the problem is the server itself or the client configuration.

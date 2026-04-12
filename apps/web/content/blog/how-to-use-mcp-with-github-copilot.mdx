@@ -1,0 +1,82 @@
+---
+title: "How to Use MCP Servers with GitHub Copilot in VS Code"
+description: "Set up MCP servers in GitHub Copilot's VS Code agent mode. Connect Copilot to databases, APIs, and dev tools through the Model Context Protocol."
+excerpt: "GitHub Copilot now supports MCP servers in VS Code agent mode. This guide walks through configuration, server selection from a directory of 5,778 indexed servers, and practical tips for getting Copilot connected to external tools through the Model Context Protocol."
+date: "2026-04-08"
+updatedAt: "2026-04-08"
+author: "Gus Marquez"
+authorUrl: "https://mcpfind.org/authors/gus-marquez"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/PLACEHOLDER"
+tags:
+  - "mcp"
+  - "developer"
+  - "github-copilot"
+  - "vs-code"
+  - "agent-mode"
+category: "devtools"
+focusKeyword: "MCP with GitHub Copilot VS Code"
+draft: false
+cornerstone: false
+faqItems:
+  - question: "Does GitHub Copilot support MCP servers natively?"
+    answer: "Yes. GitHub Copilot supports MCP servers in VS Code agent mode starting with version 1.99. You configure servers in your workspace settings or user settings JSON, and Copilot connects to them automatically when you use agent mode in the chat panel."
+  - question: "Can I use the same MCP config for Copilot and Claude Desktop?"
+    answer: "Not directly. Copilot reads MCP configuration from VS Code settings JSON under the mcp section, while Claude Desktop uses a separate claude_desktop_config.json file. The server definitions are similar, but you need to add them in both places if you use both tools."
+  - question: "What happens if an MCP server crashes during a Copilot session?"
+    answer: "Copilot will show an error in the chat panel and stop using that server's tools. You can restart the server from the MCP status indicator in the VS Code status bar without restarting the entire editor."
+  - question: "Are all MCP servers compatible with GitHub Copilot?"
+    answer: "Copilot supports servers that use the stdio transport. Servers using only SSE or Streamable HTTP transport may not work. Check the server documentation or the MCPFind directory listing for transport details before installing."
+---
+
+GitHub Copilot added MCP server support in VS Code agent mode, giving it access to external tools, databases, and APIs during code generation. This is a significant shift from Copilot's previous model, where it could only read your open files and workspace. With MCP, Copilot can query a PostgreSQL database, check your CI status, or pull documentation from internal systems while helping you write code. We analyzed the MCPFind directory of 5,778 MCP servers to identify which ones work best with Copilot's agent mode.
+
+## How Does MCP Work Inside GitHub Copilot?
+
+When you enable an MCP server in VS Code, Copilot's agent mode gains access to the tools that server exposes. The server runs as a local process on your machine and communicates with Copilot through the stdio transport protocol. This means your data stays local, and the server only activates when Copilot invokes a specific tool during a chat session. You configure servers in your VS Code settings JSON under the `mcp` key. Each server entry specifies a command to run and optional arguments. Copilot discovers the server's available tools at startup and lists them in the agent mode tool picker. The MCPFind directory indexes 2,640 servers in the [devtools category](/categories/devtools) alone, many of which expose tools that pair naturally with Copilot's code-focused workflows. You can browse these servers by category, star count, or language to find the right fit for your stack.
+
+## How Do You Configure an MCP Server for Copilot?
+
+We tested the configuration flow with several popular servers. The setup lives in your `.vscode/settings.json` file at the workspace level, or in your user settings for global access. Here is a working example that connects Copilot to a filesystem server:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "filesystem": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/project"]
+      }
+    }
+  }
+}
+```
+
+After saving, open the Copilot chat panel and switch to agent mode using the model picker. You should see a tools icon showing the newly available server. If the server fails to start, check the MCP output channel in VS Code's Output panel for error details. The process is nearly identical to [setting up MCP servers in VS Code for other clients](/blog/how-to-use-mcp-with-vscode), with the key difference being that Copilot uses agent mode rather than a separate extension. For context on what MCP is and how it works under the hood, see our [guide to the Model Context Protocol](/blog/what-is-mcp).
+
+## Which MCP Servers Pair Best with Copilot?
+
+We looked at the MCPFind directory data to identify high-value servers for Copilot users. The [devtools category](/categories/devtools) contains 2,640 servers, with an average of 40.96 GitHub stars per project. Top picks include servers for Git operations, Docker management, and API testing. Database servers from the [databases category](/categories/databases) (244 indexed servers) are also a strong match, since Copilot can write SQL queries and validate them against a live schema in real time during code generation. The [search category](/categories/search) rounds out the top three, with 460 servers that give Copilot access to documentation search, web lookups, and code search tools. For production use, we recommend starting with one or two servers that match your daily workflow rather than loading a dozen at once. Each running server consumes memory and adds latency to tool discovery during the initial handshake.
+
+## What Are the Limitations of MCP in Copilot Agent Mode?
+
+Copilot's MCP support is still maturing, and we found several constraints worth noting. First, only the stdio transport is supported. Servers that require SSE or Streamable HTTP connections will not work until GitHub adds those transports. Second, agent mode is required. Standard Copilot completions and inline suggestions do not trigger MCP tools. Third, there is no built-in server marketplace inside VS Code for Copilot. You need to find servers yourself, which is where a directory like [MCPFind](/) becomes useful for browsing 5,778 indexed options across 21 categories. Finally, Copilot does not yet support MCP resources or prompts, only tools. This means servers that primarily expose data through the resource protocol will not surface their content in Copilot conversations. These gaps are expected to close as both GitHub and the MCP specification continue to evolve through 2026.
+
+## Frequently Asked Questions
+
+### Does GitHub Copilot support MCP servers natively?
+
+Yes. GitHub Copilot supports MCP servers in VS Code agent mode starting with version 1.99. You configure servers in your workspace settings or user settings JSON, and Copilot connects to them automatically when you use agent mode in the chat panel.
+
+### Can I use the same MCP config for Copilot and Claude Desktop?
+
+Not directly. Copilot reads MCP configuration from VS Code settings JSON under the mcp section, while Claude Desktop uses a separate claude_desktop_config.json file. The server definitions are similar, but you need to add them in both places if you use both tools.
+
+### What happens if an MCP server crashes during a Copilot session?
+
+Copilot will show an error in the chat panel and stop using that server's tools. You can restart the server from the MCP status indicator in the VS Code status bar without restarting the entire editor.
+
+### Are all MCP servers compatible with GitHub Copilot?
+
+Copilot supports servers that use the stdio transport. Servers using only SSE or Streamable HTTP transport may not work. Check the server documentation or the MCPFind directory listing for transport details before installing.
