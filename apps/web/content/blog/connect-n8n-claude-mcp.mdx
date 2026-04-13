@@ -1,0 +1,84 @@
+---
+title: "How to Connect n8n Workflows to Claude Using MCP"
+description: "Connect n8n automation workflows to Claude through MCP servers. Step-by-step setup for triggering n8n nodes from AI agents via the Model Context Protocol."
+excerpt: "n8n is one of the most popular open-source workflow automation tools, and it now has an MCP server that lets Claude trigger n8n workflows directly. This guide covers setup, configuration, and how n8n fits into the broader automation category of 41 indexed MCP servers on MCPFind."
+date: "2026-04-07"
+updatedAt: "2026-04-07"
+author: "Gus Marquez"
+authorUrl: "https://mcpfind.org/authors/gus-marquez"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/PLACEHOLDER"
+tags:
+  - "mcp"
+  - "developer"
+  - "n8n"
+  - "automation"
+  - "workflows"
+category: "automation"
+focusKeyword: "n8n MCP server Claude setup"
+draft: false
+cornerstone: false
+faqItems:
+  - question: "Does n8n have an official MCP server?"
+    answer: "Yes. The n8n team maintains an MCP server that exposes n8n workflow triggers as tools. You install it via npm and configure it in your Claude Desktop or VS Code settings to give Claude direct access to your n8n instance."
+  - question: "Can Claude trigger any n8n workflow through MCP?"
+    answer: "Claude can trigger workflows that have a webhook or MCP trigger node as their entry point. Standard manual-trigger or cron-trigger workflows need to be updated with a webhook node before they become accessible through the MCP server."
+  - question: "Is n8n MCP limited to Claude, or does it work with other AI clients?"
+    answer: "The n8n MCP server uses the standard Model Context Protocol, so it works with any MCP-compatible client. That includes Claude Desktop, VS Code with Copilot agent mode, Cursor, and Windsurf. The server itself is client-agnostic."
+  - question: "Do I need n8n Cloud or can I use the self-hosted version?"
+    answer: "Both work. The MCP server connects to your n8n instance via its API URL, so it does not matter whether that instance runs on n8n Cloud or on your own infrastructure. You just need a valid API key and a reachable URL."
+---
+
+n8n is one of the most widely adopted open-source workflow automation platforms, with hundreds of built-in integrations for services like Slack, Google Sheets, and GitHub. With its MCP server, Claude can trigger n8n workflows directly during a conversation, turning your AI assistant into a control plane for automated tasks. We tested this setup against the MCPFind directory, which indexes 41 servers in the [automation category](/categories/automation), and found n8n's MCP integration to be one of the most practical options for developers who already run n8n workflows.
+
+## What Does the n8n MCP Server Actually Do?
+
+The n8n MCP server exposes your n8n workflows as callable tools inside any MCP-compatible AI client. When Claude receives a request that matches a workflow's trigger, it calls the n8n server, which fires the workflow and returns the result. This turns static workflows into on-demand capabilities. For example, if you have an n8n workflow that scrapes a website and stores the result in a Google Sheet, Claude can trigger that workflow mid-conversation and report back with the output. The server connects to your n8n instance through its REST API, authenticating with an API key you provide during configuration. MCPFind's [automation category](/categories/automation) lists 41 servers in this space, with an average of 14.37 GitHub stars. The top automation server by stars is Figma MCP at 516 stars, but n8n's server stands out for its breadth of workflow integrations.
+
+## How Do You Set Up n8n MCP with Claude Desktop?
+
+We walked through the full setup on a local n8n instance. First, install the n8n MCP server package. Then add the server to your Claude Desktop configuration file. Here is the configuration block:
+
+```json
+{
+  "mcpServers": {
+    "n8n": {
+      "command": "npx",
+      "args": ["-y", "n8n-mcp-server"],
+      "env": {
+        "N8N_API_URL": "http://localhost:5678/api/v1",
+        "N8N_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+Replace the API URL with your n8n instance address and generate an API key from the n8n settings panel under API. After restarting Claude Desktop, you should see the n8n tools listed when you click the tools icon in the chat input area. If the tools do not appear, open the Claude Desktop logs to check for connection errors. If you are new to MCP configuration in general, our [guide to building your first MCP server](/blog/building-your-first-mcp-server) covers the underlying concepts. For the full explanation of what MCP is and why it exists, see our [cornerstone guide to the Model Context Protocol](/blog/what-is-mcp).
+
+## What Kinds of Workflows Work Best with MCP?
+
+Not every n8n workflow is a good fit for MCP triggering. We found three patterns that work particularly well. First, data retrieval workflows: pull records from a CRM, check inventory levels, or query an internal database. Claude asks a question, the workflow runs, and the answer comes back in seconds. Second, notification workflows: send a Slack message, create a Jira ticket, or post to a webhook. These are fire-and-forget actions that Claude can execute as side effects during a conversation. Third, multi-step processing: workflows that chain together API calls, transformations, and conditional logic. Claude sends a single trigger, and n8n handles the orchestration. Workflows that require user interaction mid-execution, like approval nodes or manual steps, are poor candidates because Claude cannot pause and wait for human input. The MCPFind directory tracks 5,778 servers across 21 categories, and many of the [search](/categories/search) and [databases](/categories/databases) category servers solve similar retrieval problems without n8n. The advantage of n8n is combining multiple steps into one tool call.
+
+## How Does n8n Compare to Other Automation MCP Servers?
+
+We compared n8n against the other 40 servers in MCPFind's automation category. Most automation servers are single-purpose: they connect to one service or expose one type of trigger. n8n's strength is its generality. A single n8n MCP server can expose dozens of workflows that each integrate with different services, all through one configuration entry. The tradeoff is complexity. You need a running n8n instance, you need to build and maintain the workflows, and debugging failures means checking both the MCP connection and the n8n execution log. For developers who already use n8n, the MCP server is a natural extension of their existing setup. For those starting fresh, a dedicated single-service MCP server from the [MCPFind directory](/) might be simpler to configure and maintain. The 460 servers in the [search category](/categories/search) and 244 in [databases](/categories/databases), for instance, provide direct access without the workflow abstraction layer.
+
+## Frequently Asked Questions
+
+### Does n8n have an official MCP server?
+
+Yes. The n8n team maintains an MCP server that exposes n8n workflow triggers as tools. You install it via npm and configure it in your Claude Desktop or VS Code settings to give Claude direct access to your n8n instance.
+
+### Can Claude trigger any n8n workflow through MCP?
+
+Claude can trigger workflows that have a webhook or MCP trigger node as their entry point. Standard manual-trigger or cron-trigger workflows need to be updated with a webhook node before they become accessible through the MCP server.
+
+### Is n8n MCP limited to Claude, or does it work with other AI clients?
+
+The n8n MCP server uses the standard Model Context Protocol, so it works with any MCP-compatible client. That includes Claude Desktop, VS Code with Copilot agent mode, Cursor, and Windsurf. The server itself is client-agnostic.
+
+### Do I need n8n Cloud or can I use the self-hosted version?
+
+Both work. The MCP server connects to your n8n instance via its API URL, so it does not matter whether that instance runs on n8n Cloud or on your own infrastructure. You just need a valid API key and a reachable URL.
