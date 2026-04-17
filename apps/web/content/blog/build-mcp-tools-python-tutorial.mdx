@@ -1,0 +1,142 @@
+---
+title: "How to Build MCP Tools With Python: Patterns That Work"
+description: "Learn tool schema design, argument validation, and error handling for Python MCP servers. Practical patterns for building reliable, directory-ready MCP tools."
+excerpt: "Building a Python MCP server is easy with the SDK. Building tools that are reliable, well-typed, and useful to other developers takes more thought. This guide covers tool schema design, argument validation, error handling, and how to prepare your server for the MCPFind directory."
+date: "2026-04-07"
+updatedAt: "2026-04-07"
+author: "Gus Marquez"
+authorUrl: "https://mcpfind.org/authors/gus-marquez"
+authorSameAs:
+  - "https://linkedin.com/in/PLACEHOLDER"
+  - "https://github.com/PLACEHOLDER"
+tags:
+  - "mcp"
+  - "developer"
+  - "python"
+  - "tutorial"
+  - "mcp-server-development"
+category: "devtools"
+focusKeyword: "build MCP tools Python"
+draft: false
+cornerstone: false
+faqItems:
+  - question: "What Python version does the MCP SDK require?"
+    answer: "The official MCP Python SDK requires Python 3.10 or later. FastMCP, the higher-level wrapper, has the same requirement. Check the package's pyproject.toml for the exact constraint if you are pinning versions."
+  - question: "Can I use async/await in MCP tool handlers?"
+    answer: "Yes. FastMCP supports both synchronous and async tool handlers. Async handlers are preferred when your tool makes network requests or database queries, since they avoid blocking the server's event loop while waiting for I/O."
+  - question: "How many tools should a single MCP server expose?"
+    answer: "Keep it focused. A server with 5-15 well-named tools is easier for AI models to reason about than one with 50 loosely related tools. If your server grows beyond 20 tools, consider splitting it into domain-specific servers."
+  - question: "Do I need to use FastMCP or can I use the low-level MCP API?"
+    answer: "You can use either. FastMCP is the recommended starting point because it handles schema generation, transport setup, and error formatting automatically. The low-level API gives you more control but requires more boilerplate. Start with FastMCP unless you have a specific reason not to."
+---
+
+Building a Python MCP server is straightforward with the official SDK. Building tools that are reliable, well-typed, and useful to other developers takes more thought. This guide covers the patterns that matter most: tool schema design, argument validation, error handling, and structuring your project so it is ready for the MCPFind directory.
+
+If you are starting from scratch, read [How to Build Your First MCP Server](/blog/building-your-first-mcp-server) first. This guide assumes you already have a working server and want to write better tools. For background on what MCP is and why it matters, see [What Is MCP?](/blog/what-is-mcp).
+
+## How Do You Define Tools With Proper Schemas in Python?
+
+Every MCP tool has a name, description, and inputSchema. The inputSchema is a JSON Schema object that tells the client what arguments your tool accepts. Getting this right matters because AI models use the schema to decide when and how to call your tool.
+
+The `@mcp.tool()` decorator in the Python MCP SDK generates the schema automatically from your function's type annotations. Use Python type hints and annotate each parameter with a `Field` description. The more precise your descriptions, the better models understand what to send.
+
+```python
+from mcp.server.fastmcp import FastMCP
+from pydantic import Field
+
+mcp = FastMCP("my-server")
+
+@mcp.tool()
+def get_weather(
+    city: str = Field(description="City name, e.g. 'Austin'"),
+    units: str = Field(default="celsius", description="Temperature units: celsius or fahrenheit")
+) -> str:
+    """Get current weather for a city."""
+    # your implementation here
+    return f"Weather for {city} in {units}"
+```
+
+Keep tool names short and verb-first: `get_`, `create_`, `list_`, `delete_`. Models use the tool name in reasoning traces. Names like `fetch_latest_records_from_database` create friction. `list_records` is cleaner and more composable.
+
+## How Should You Validate Arguments in Tool Handlers?
+
+Use Pydantic for validation inside tool handlers. The MCP SDK passes arguments after schema validation at the transport layer, but schema validation only checks types and required fields. Pydantic lets you enforce value constraints like min/max length, regex patterns, and allowed enum values before your tool logic runs.
+
+```python
+from pydantic import BaseModel, validator, Field
+
+class WeatherRequest(BaseModel):
+    city: str = Field(min_length=1, max_length=100)
+    units: str = Field(default="celsius")
+
+    @validator("units")
+    def units_must_be_valid(cls, v):
+        if v not in ("celsius", "fahrenheit"):
+            raise ValueError("units must be celsius or fahrenheit")
+        return v
+
+@mcp.tool()
+def get_weather(city: str, units: str = "celsius") -> str:
+    """Get current weather for a city."""
+    req = WeatherRequest(city=city, units=units)
+    return fetch_weather(req.city, req.units)
+```
+
+If validation fails inside your handler, raise a `ValueError` with a clear message. The MCP client receives the error and the model can retry with corrected arguments. Never let a validation failure produce a silent wrong result.
+
+Be specific in your error messages. "units must be celsius or fahrenheit" is useful. "invalid input" is not. Models attempting to self-correct depend on the error text to understand what needs to change.
+
+## How Do You Return Errors Correctly From MCP Tools?
+
+MCP tools signal errors through two mechanisms: raising exceptions for unrecoverable failures, and returning structured error content for recoverable ones. The distinction matters because AI models handle them differently. An exception stops execution immediately. A structured error lets the model decide whether to retry, ask for clarification, or inform the user.
+
+The Python SDK maps unhandled exceptions to MCP error responses automatically. For intentional error returns, use the `isError` flag in your content response:
+
+```python
+from mcp.types import TextContent
+
+@mcp.tool()
+def lookup_record(record_id: str) -> list[TextContent]:
+    """Look up a record by ID."""
+    record = db.find(record_id)
+    if record is None:
+        return [TextContent(
+            type="text",
+            text=f"No record found for ID: {record_id}",
+            isError=True
+        )]
+    return [TextContent(type="text", text=record.to_json())]
+```
+
+Reserve exceptions for true failures: database connection errors, missing credentials, unexpected server state. Use structured error returns for predictable no-results cases. That separation makes your tool predictable to models and much easier to debug when something goes wrong in production.
+
+## How Do You Prepare a Python MCP Server for the MCPFind Directory?
+
+MCPFind indexes servers from GitHub and the Smithery registry. To get indexed, your server needs a clear README, correct metadata, and a working configuration example. We track 6,105 servers across 21 categories. The [ai-ml category](/categories/ai-ml) holds 800 servers with an average of 118 GitHub stars, the highest of any category, and the top servers there are well-documented Python and TypeScript projects.
+
+Four things that affect discoverability in the MCPFind index:
+
+1. **Name and description**: Include keywords that match your tool's category. A database tool should name the specific database in the repository name.
+2. **README quality**: Include a working JSON config block so users can install immediately. Servers without config examples get deprioritized in manual review.
+3. **License**: Open-source licenses (MIT, Apache 2.0) appear in directory filters. Unlicensed repos are excluded from some filter views.
+4. **Recent activity**: Star velocity and commit recency signal active projects that users can rely on.
+
+The MCPFind [devtools category](/categories/devtools) indexes 2,738 servers. Standing out in that group requires specific tooling, clear documentation, and an accurate category tag in your Smithery manifest.
+
+## Frequently Asked Questions
+
+### What Python version does the MCP SDK require?
+
+The official MCP Python SDK requires Python 3.10 or later. FastMCP, the higher-level wrapper, has the same requirement. Check the package's pyproject.toml for the exact constraint if you are pinning versions.
+
+### Can I use async/await in MCP tool handlers?
+
+Yes. FastMCP supports both synchronous and async tool handlers. Async handlers are preferred when your tool makes network requests or database queries, since they avoid blocking the server's event loop while waiting for I/O.
+
+### How many tools should a single MCP server expose?
+
+Keep it focused. A server with 5-15 well-named tools is easier for AI models to reason about than one with 50 loosely related tools. If your server grows beyond 20 tools, consider splitting it into domain-specific servers.
+
+### Do I need to use FastMCP or can I use the low-level MCP API?
+
+You can use either. FastMCP is the recommended starting point because it handles schema generation, transport setup, and error formatting automatically. The low-level API gives you more control but requires more boilerplate. Start with FastMCP unless you have a specific reason not to.
