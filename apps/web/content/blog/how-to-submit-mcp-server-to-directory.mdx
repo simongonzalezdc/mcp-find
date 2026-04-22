@@ -1,0 +1,94 @@
+---
+title: "How to Submit Your MCP Server to a Public Directory"
+description: "How to publish your MCP server to MCPFind, Smithery, and the official registry. Covers metadata requirements, submission steps, and discoverability tips."
+excerpt: "Getting your MCP server listed in a public directory multiplies its discoverability across AI coding tools and agent frameworks. This guide walks through the three main submission paths: MCPFind, Smithery, and the official Anthropic MCP registry, including what metadata each requires."
+date: "2026-04-14"
+updatedAt: "2026-04-14"
+author: "Adam Bush"
+authorUrl: "https://www.linkedin.com/in/adam-bush/"
+authorSameAs:
+  - "https://www.linkedin.com/in/adam-bush/"
+tags:
+  - "mcp"
+  - "developer"
+  - "registry"
+  - "publishing"
+  - "directory"
+category: "devtools"
+focusKeyword: "how to publish MCP server to registry"
+draft: false
+cornerstone: false
+faqItems:
+  - question: "Do you need a hosted endpoint to submit to MCP registries?"
+    answer: "Not for all of them. MCPFind and the official registry accept servers that run locally as stdio. Smithery prefers hosted endpoints but allows self-hosted listings. You only need a live URL if you want one-click install on Smithery."
+  - question: "How long does review take for the official MCP registry?"
+    answer: "Manual review typically takes 2-5 business days. The registry is managed by Anthropic staff and community maintainers. Complex submissions or servers with unusual dependencies may take longer."
+  - question: "Can you submit the same server to multiple registries?"
+    answer: "Yes. There is no exclusivity requirement across MCPFind, Smithery, and the official registry. Listing your server in all three maximizes discovery surface without conflict."
+  - question: "What happens after your server gets listed on MCPFind?"
+    answer: "MCPFind's sync pipeline checks your repository periodically for updates, star count changes, and README changes. You do not need to re-submit when you update your server - changes propagate automatically."
+---
+
+If you have built an MCP server, getting it listed in public directories is the most effective way to put it in front of developers searching for tools in their AI clients. MCPFind indexes 6,714 servers across 21 categories as of April 2026. Smithery and the official Anthropic MCP registry add additional distribution. Submitting to all three takes less than an hour. Here is how each submission path works and what metadata you need to prepare before you start.
+
+## What Are the Main Public MCP Registries?
+
+If you want developers to find your MCP server, you have three main options: the official MCP registry at registry.modelcontextprotocol.io, Smithery at smithery.ai, and MCPFind at mcpfind.org. Each has a different focus and a different submission process.
+
+The official MCP registry is maintained by Anthropic and is the authoritative source for clients that auto-discover servers. Smithery specializes in hosted servers and offers one-click install for users - getting listed there puts your server in front of developers using Claude Desktop, Cursor, and Windsurf with minimal setup friction. MCPFind indexes 6,714 servers with category filtering across [21 categories](/categories/devtools), making it useful for discovery when developers are browsing by use case rather than searching by name.
+
+Most developers submit to all three. There is no conflict between registries, and visibility across multiple directories accelerates how quickly new users discover your work. Start with the registry that matches your server's deployment model, then expand.
+
+## How Do You Submit a Server to the Official MCP Registry?
+
+The official MCP registry accepts submissions through a GitHub pull request to the modelcontextprotocol/registry repository. Navigate to the `servers` directory, add a JSON file describing your server, and open a PR.
+
+The required fields are: `name`, `description`, `homepage` (your documentation or repo URL), and either a server endpoint URL or a repository link. Your description needs to be specific about what your server does. Vague descriptions like "a useful AI assistant" get deprioritized. A good description reads: "Exposes PostgreSQL read and write tools via stdio transport. Requires a DATABASE_URL environment variable."
+
+The registry team reviews submissions manually, typically within a few business days. Once merged, your server appears in the registry and becomes discoverable to any MCP client that checks the registry for available tools.
+
+One practical tip before writing your JSON: look at existing approved entries in the repository. The format evolves and the live examples are more current than any separate documentation page.
+
+## How Do You Get Your Server Listed on Smithery?
+
+Smithery offers two submission paths: the CLI or the web dashboard. The CLI approach works well if you already have a published package.
+
+Install the CLI with `npm install -g @smithery/cli` and run:
+
+```bash
+smithery mcp publish "https://your-server.com" -n yourorg/your-server
+```
+
+The web dashboard path is often easier if you have a public GitHub repository. Create an account at smithery.ai, navigate to "Publish MCP," connect your repository, and fill in the metadata form. Smithery asks for server name, description, categories, tags, required environment variables, and example prompts showing what your server can do.
+
+Servers that support one-click install get featured placement in Smithery's directory. One-click install requires your server to accept configuration through environment variables and have a working hosted endpoint. If your server only runs as stdio, you can still list it as a self-hosted option - it just does not qualify for the one-click badge.
+
+## What Metadata Makes an MCP Server Listing More Discoverable?
+
+Metadata quality directly affects how discoverable your server becomes across all three registries. Developers search by use case, not by server name, so your description and tags need to reflect the problem the server solves rather than how it works internally.
+
+Start with the description. It should answer three questions: what does this server do, what tools does it expose, and what credentials does a user need to set up? For a database server: "Read and write access to PostgreSQL databases via MCP. Exposes 12 tools including query, insert, update, and schema inspection. Requires DATABASE_URL."
+
+Tags drive category placement. MCPFind uses 21 fixed categories - check the [full category list](/categories/devtools) and pick the most accurate one for your server. The devtools category indexes 2,840 servers, which means accurate sub-tags are the only thing separating your listing from hundreds of others. Specific beats broad.
+
+For more on what well-built MCP servers look like before submission, [How to Build an MCP Server With TypeScript](/blog/build-mcp-server-typescript) and [Building Your First MCP Server](/blog/building-your-first-mcp-server) both cover the structural patterns that earn high star counts in the directory.
+
+If you are newer to what MCP is and why building servers matters, start with [What Is MCP](/blog/what-is-mcp) before diving into the submission process.
+
+## Frequently Asked Questions
+
+### Do you need a hosted endpoint to submit to MCP registries?
+
+Not for all of them. MCPFind and the official registry accept servers that run locally as stdio. Smithery prefers hosted endpoints but allows self-hosted listings. You only need a live URL if you want one-click install on Smithery.
+
+### How long does review take for the official MCP registry?
+
+Manual review typically takes 2-5 business days. The registry is managed by Anthropic staff and community maintainers. Complex submissions or servers with unusual dependencies may take longer.
+
+### Can you submit the same server to multiple registries?
+
+Yes. There is no exclusivity requirement across MCPFind, Smithery, and the official registry. Listing your server in all three maximizes discovery surface without conflict.
+
+### What happens after your server gets listed on MCPFind?
+
+MCPFind's sync pipeline checks your repository periodically for updates, star count changes, and README changes. You do not need to re-submit when you update your server - changes propagate automatically.
