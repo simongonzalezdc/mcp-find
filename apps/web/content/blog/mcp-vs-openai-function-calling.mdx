@@ -1,0 +1,88 @@
+---
+title: "MCP vs OpenAI Function Calling: Which Should You Build With?"
+description: "MCP vs OpenAI function calling: protocol-level differences, vendor lock-in tradeoffs, and a data-driven look at which tool categories exist only as MCP."
+excerpt: "We analyzed MCPFind's 6,714-server index to find where MCP has moved beyond OpenAI function calling in terms of ecosystem depth. The answer changes your architecture decision: whole tool categories exist only as MCP integrations, with no function-calling equivalent in the wild."
+date: "2026-04-17"
+updatedAt: "2026-04-17"
+author: "Gus Marquez"
+authorUrl: "https://www.linkedin.com/in/gustavoamarquez"
+authorSameAs:
+  - "https://www.linkedin.com/in/gustavoamarquez"
+tags:
+  - "mcp"
+  - "developer"
+  - "function-calling"
+  - "openai"
+  - "architecture"
+category: "devtools"
+focusKeyword: "MCP vs OpenAI function calling"
+draft: false
+cornerstone: false
+faqItems:
+  - question: "Can you use MCP tools with the OpenAI API?"
+    answer: "Yes. OpenAI added MCP client support in early 2025. You can point the OpenAI API at an MCP server using the responses API with tool type set to 'mcp'. The same MCP server works with both the Anthropic and OpenAI APIs without code changes."
+  - question: "Is function calling being deprecated in favor of MCP?"
+    answer: "No. Function calling remains the primary tool-use method in most OpenAI API integrations. MCP is an additional option for server-based tool exposure. Both protocols are actively maintained as of 2026."
+  - question: "Does MCP support the same tool schema format as OpenAI function calling?"
+    answer: "No. MCP uses its own tool schema format defined in the specification. Several MCP server frameworks can generate MCP tool definitions from OpenAI function schemas, which reduces migration effort when converting existing integrations."
+  - question: "What is the performance difference between MCP and function calling?"
+    answer: "MCP adds latency for the initial connection and tool discovery but reduces per-call overhead once the session is established. Function calling resends the full tool schema on every request, adding token overhead. For long sessions with many tool calls, MCP is typically more efficient."
+---
+
+OpenAI introduced function calling in June 2023. Anthropic released the MCP specification in November 2024. By April 2026, MCPFind indexes 6,714 MCP servers across 21 categories - a number that reflects genuine adoption, not just experimentation. The question developers are actively asking is not whether MCP is interesting, but whether it is the right architecture for their specific use case, or whether function calling still makes more sense. We analyzed the data to answer both sides.
+
+## What Is the Core Architectural Difference Between MCP and Function Calling?
+
+Function calling embeds tool definitions inside your API request. You send a list of function schemas with each call, the model decides which to invoke, and your application executes the request. Everything happens within a single request-response cycle, which keeps the architecture simple but means tool definitions are ephemeral - they do not persist between calls unless you resend them.
+
+MCP separates tool definitions from the API call entirely. You run a separate MCP server process that exposes tools through the standardized protocol. The client connects once, discovers all available tools through a `tools/list` call, and then invokes those tools on demand. The server persists between requests and can maintain state: active database connections, cached credentials, open file handles.
+
+This split is the key structural distinction. Function calling is request-scoped. MCP is session-scoped. The difference matters most for tools that are expensive to initialize on every request. A database connection opened once per session costs a fraction of what it costs to re-establish on every API call. The 256 servers in MCPFind's [databases category](/categories/databases) reflect this pattern clearly - database integrations are almost exclusively MCP-native, not function-call-based.
+
+## How Does Vendor Lock-In Differ Between MCP and OpenAI Function Calling?
+
+Function calling is provider-specific by design. OpenAI, Anthropic, Google, and Mistral all support it, but each has a different schema format. A function defined for the OpenAI API does not transfer to the Anthropic API unchanged - the structure differs enough that switching providers requires rewriting tool definitions. For teams that want to experiment across model providers, this creates real friction.
+
+MCP is provider-agnostic. The same MCP server works with Claude, GPT-4o, Gemini, and any other model that implements the MCP client protocol. We analyzed the 2,840 servers in MCPFind's [devtools category](/categories/devtools): the high-starred projects are consistently written once and tested against multiple clients. The protocol abstraction holds in practice.
+
+The tradeoff is operational complexity. Function calling requires no additional infrastructure. MCP requires running and maintaining a server process. For teams already operating microservices, the overhead is minimal. For solo developers building a quick prototype with two or three tools, that overhead is a real cost. The right answer depends on your deployment context, not on which protocol is newer.
+
+## Which Tool Categories Exist Only as MCP Integrations?
+
+We looked at MCPFind's 6,714-server index to identify which categories have no real equivalent in the function-calling ecosystem. The pattern is clear: infrastructure-adjacent categories are MCP-native.
+
+The monitoring category (52 servers) contains tools that expose metrics streams, health check endpoints, and observability dashboards. These require persistent connections and event subscriptions - patterns that do not map cleanly to stateless function calls. The filesystems category (68 servers) includes servers with file change watchers and directory subscriptions. The ai-ml category (836 servers) includes model orchestration servers that wrap other AI APIs and route requests across multiple models.
+
+In contrast, the search category (501 servers) has substantial function-calling competition. Search is a stateless, request-response pattern that fits function calling well. If your primary use case is "query an external API and return a structured result," function calling may be the simpler architecture.
+
+The databases category (256 servers) sits in the middle. Read-only queries work as function calls, but connection pooling and transaction management consistently push production teams toward MCP. We see this reflected in the star distribution: the highest-starred database tools on MCPFind (Supabase at 2,556 stars) are all MCP-native.
+
+## When Should You Use Function Calling Instead of MCP?
+
+Function calling is the right choice in three clear scenarios: quick prototypes, single-model deployments, and when you want all logic in one codebase with no external process dependencies.
+
+If you are building a proof-of-concept with two or three tools, defining them inline as function schemas is faster than setting up an MCP server. The entire implementation lives in one file - easier to share with collaborators, easier to debug, easier to throw away.
+
+Single-model deployments narrow the lock-in concern significantly. If you are committed to one provider for a specific project and have no plans to switch, the provider-specific schema format does not hurt you. Function calling's lower operational overhead may be the better engineering call.
+
+Where function calling shows strain: any tool that benefits from shared state between calls, any integration requiring persistent credentials or connections, and any use case involving multiple AI clients sharing the same tool definitions. Those are the cases where MCP pays for its extra complexity. Teams hitting these problems often end up converting existing function-calling code to MCP servers rather than patching around the stateless limitations.
+
+For a look at how MCP compares to other integration patterns, see [MCP vs Function Calling](/blog/mcp-vs-function-calling) and [MCP vs LangChain Tools](/blog/mcp-vs-langchain-tools). To understand the protocol fundamentals behind both approaches, [What Is MCP](/blog/what-is-mcp) covers the core concepts.
+
+## Frequently Asked Questions
+
+### Can you use MCP tools with the OpenAI API?
+
+Yes. OpenAI added MCP client support in early 2025. You can point the OpenAI API at an MCP server using the responses API with tool type set to `mcp`. The same MCP server works with both the Anthropic and OpenAI APIs without code changes.
+
+### Is function calling being deprecated in favor of MCP?
+
+No. Function calling remains the primary tool-use method in most OpenAI API integrations. MCP is an additional option for server-based tool exposure. Both protocols are actively maintained as of 2026.
+
+### Does MCP support the same tool schema format as OpenAI function calling?
+
+No. MCP uses its own tool schema format defined in the specification. Several MCP server frameworks can generate MCP tool definitions from OpenAI function schemas, which reduces migration effort when converting existing integrations.
+
+### What is the performance difference between MCP and function calling?
+
+MCP adds latency for the initial connection and tool discovery but reduces per-call overhead once the session is established. Function calling resends the full tool schema on every request, adding token overhead. For long sessions with many tool calls, MCP is typically more efficient.
