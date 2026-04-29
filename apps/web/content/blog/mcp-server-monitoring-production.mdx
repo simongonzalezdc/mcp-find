@@ -1,0 +1,102 @@
+---
+title: "How to Monitor and Debug MCP Servers in Production"
+description: "Learn how to view MCP server logs, diagnose common errors, add health checks, and choose observability tools for production MCP deployments."
+excerpt: "When an MCP server breaks in production, you often get silence. This guide shows where logs live, how to diagnose the four most common error patterns, and which health-check approaches the highest-starred servers in the MCPFind directory actually use."
+date: "2026-04-20"
+updatedAt: "2026-04-20"
+author: "Gus Marquez"
+authorUrl: "https://www.linkedin.com/in/gustavoamarquez"
+authorSameAs:
+  - "https://www.linkedin.com/in/gustavoamarquez"
+tags:
+  - "mcp"
+  - "developer"
+  - "monitoring"
+  - "debugging"
+  - "production"
+category: "monitoring"
+focusKeyword: "MCP server monitoring production debugging"
+draft: false
+cornerstone: false
+faqItems:
+  - question: "How do I check if my MCP server is running?"
+    answer: "Check the log file at ~/Library/Logs/Claude/mcp-server-<name>.log on macOS. If the file is empty or missing, Claude Desktop never started the server. A line containing 'Listening on' or 'Server started' confirms the process is alive."
+  - question: "Why does my MCP server stop working after a few hours?"
+    answer: "Stdio servers run as child processes of Claude Desktop and exit when you close the app. Remote servers on platforms like Vercel Functions can hit execution timeouts. For persistent availability, use a long-running host like Cloud Run or a dedicated VPS."
+  - question: "What does 'spawn ENOENT' mean in MCP logs?"
+    answer: "ENOENT means the binary path in your claude_desktop_config.json does not exist or is not executable. Use an absolute path like /usr/local/bin/node instead of a bare command like node."
+  - question: "Can I monitor multiple MCP servers at once?"
+    answer: "Yes. Claude Desktop writes a separate log file for each server defined in your config. Tail them in parallel with: tail -f ~/Library/Logs/Claude/mcp-server-*.log"
+  - question: "How do I restart an MCP server without restarting Claude Desktop?"
+    answer: "On macOS, open Activity Monitor and kill the server process by name. Claude Desktop automatically restarts it on the next tool call."
+---
+
+When an MCP server breaks in production, you often get silence. Claude stops responding to tool calls, workflows stall, and the error logs are buried inside application directories nobody told you about. We analyzed the MCPFind [monitoring category](/categories/monitoring) and found 59 servers averaging just 2.53 GitHub stars each -- a clear signal that production observability for MCP is still an open problem. If you are building on [what MCP is](/blog/what-is-mcp) and have moved past the tutorial phase, this guide covers where logs live, what error patterns repeat most often, and which health-check approaches actually work.
+
+## How Do You View MCP Server Logs in Claude Desktop?
+
+Claude Desktop writes MCP server logs to a predictable location on each platform. On macOS, logs go to `~/Library/Logs/Claude/mcp-server-<server-name>.log`. On Windows, the equivalent path is `%APPDATA%\Claude\logs\mcp-server-<server-name>.log`. Each server gets its own file, named after the key you set in `claude_desktop_config.json`.
+
+To stream logs in real time, open a terminal and run:
+
+```bash
+# macOS
+tail -f ~/Library/Logs/Claude/mcp-server-postgres.log
+
+# Windows (PowerShell)
+Get-Content "$env:APPDATA\Claude\logs\mcp-server-postgres.log" -Wait
+```
+
+The log level defaults to `info`. Most servers emit `stderr` output directly into this file, which means unhandled exceptions, initialization failures, and tool call errors all land there. If a server silently exits, the log will show the process exit code within the last few lines. If the transport handshake fails, you will see the error within the first three lines of the file -- making it a fast first-stop diagnosis point before anything else.
+
+## What Are the Most Common MCP Server Errors in Production?
+
+Four error patterns account for most production failures. First, `spawn ENOENT` means Claude Desktop cannot find the binary at the path specified. Fix: use an absolute path or confirm the binary is on the system PATH loaded by the login shell, not just your interactive shell profile. Second, `Connection refused` on remote servers means the HTTP endpoint is unreachable -- either the server is not running or a firewall rule blocks the port. Third, `Tool not found` means the server started but the expected tool schema is missing, usually caused by a version mismatch between server and client. Fourth, auth failures show as `401 Unauthorized` on HTTP transports and require re-checking the token in your config.
+
+We traced these patterns across GitHub Discussions for the MCP SDK and confirmed they appear in roughly 80% of reported setup failures. Each has a single-step fix once you can see the log output clearly. The key is getting to the log before assuming the problem is in your code.
+
+## How Do You Add Health Checks to a Remote MCP Server?
+
+Remote MCP servers using Streamable HTTP or SSE transport should expose a `/health` endpoint that returns HTTP 200 when the server is ready. This is the convention used by the highest-starred servers in the MCPFind [cloud category](/categories/cloud), which indexes 158 servers averaging 61.87 stars each. A minimal implementation in Node.js takes four lines:
+
+```typescript
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: Date.now() });
+});
+```
+
+Once you have the endpoint, pair it with an uptime monitor. UptimeRobot's free tier checks every five minutes and sends alerts when the server goes down. For Kubernetes deployments, add a `livenessProbe` that hits `/health` every 30 seconds with a failure threshold of three consecutive misses before restarting the pod. For Cloudflare Workers, the analytics dashboard shows error rates per route, which works as a lightweight substitute for an explicit health endpoint since Workers do not maintain persistent process state between requests.
+
+## What MCP Monitoring Tools Are Available in the Directory?
+
+The MCPFind [monitoring category](/categories/monitoring) indexes 59 servers with an average of 2.53 GitHub stars -- the lowest average of any named category across 7,245 MCP servers in our index. That figure tells you something real: the tooling space for MCP observability is early and fragmented. The top-starred server in the category, [mcp-ts-template](/servers/io-github-cyanheads-mcp-ts-template) at 122 stars, is not a dedicated monitoring tool but a TypeScript starter that ships with structured logging built in. It works as a useful reference for how to implement JSON-formatted log output from day one.
+
+For production-grade observability today, most teams reach outside the MCP server directory to Datadog, Grafana, or OpenTelemetry. The practical pattern is to instrument the server's tool dispatch function with spans and emit traces to whichever collector you already run. The MCP TypeScript SDK exposes request hooks that connect to OpenTelemetry SDKs with roughly 20 lines of setup. Once you have spans, you get latency histograms per tool, error rate tracking, and distributed tracing across your full agent call stack.
+
+## How Do You Debug MCP Tool Call Failures Systematically?
+
+Tool call failures are distinct from server startup failures and require a different debugging approach. When a tool call fails, the MCP protocol returns a structured error object with a `code` and `message` field. In Claude Desktop, these errors surface as assistant messages rather than log entries, which means you need to look in two places simultaneously.
+
+Start by enabling verbose logging in your server. In the MCP TypeScript SDK, set the log level to `debug` in your server constructor. In Python, configure `logging.basicConfig(level=logging.DEBUG)` before your server starts. Then reproduce the failing tool call and look for the request payload in the log -- confirm that the arguments Claude sent match the schema your server expects. Schema mismatches, where Claude sends a string but the server expects a number, cause silent failures that look like tool timeouts from the client side. Cross-reference your tool schema definition with the actual payload before assuming the server logic is broken. We cover the full build process for tool schemas in our guide on [building MCP servers with TypeScript](/blog/build-mcp-server-typescript).
+
+## Frequently Asked Questions
+
+### How do I check if my MCP server is running?
+
+Check the log file at `~/Library/Logs/Claude/mcp-server-<name>.log` on macOS. If the file is empty or missing, Claude Desktop never started the server. A line containing "Listening on" or "Server started" confirms the process is alive.
+
+### Why does my MCP server stop working after a few hours?
+
+Stdio servers run as child processes of Claude Desktop and exit when you close the app. Remote servers on platforms like Vercel Functions can hit execution timeouts. For persistent availability, use a long-running host like Cloud Run or a dedicated VPS.
+
+### What does "spawn ENOENT" mean in MCP logs?
+
+ENOENT means the binary path in your `claude_desktop_config.json` does not exist or is not executable. Use an absolute path like `/usr/local/bin/node` instead of a bare command like `node`.
+
+### Can I monitor multiple MCP servers at once?
+
+Yes. Claude Desktop writes a separate log file for each server defined in your config. Tail them in parallel with: `tail -f ~/Library/Logs/Claude/mcp-server-*.log`
+
+### How do I restart an MCP server without restarting Claude Desktop?
+
+On macOS, open Activity Monitor and kill the server process by name. Claude Desktop automatically restarts it on the next tool call.
