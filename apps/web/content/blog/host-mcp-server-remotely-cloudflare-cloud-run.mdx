@@ -1,0 +1,127 @@
+---
+title: "How to Host an MCP Server Remotely: Cloudflare, Cloud Run, Vercel"
+description: "Compare Cloudflare Workers, Google Cloud Run, and Vercel for hosting remote MCP servers. Includes setup steps, cost tradeoffs, and directory data on production deployments."
+excerpt: "Stdio MCP servers only work on the local machine where Claude Desktop runs. Remote hosting changes that: your server becomes a persistent endpoint any authorized client can reach. This guide compares Cloudflare Workers, Cloud Run, and Vercel for MCP deployments, with cost tradeoffs and real examples from the directory."
+date: "2026-04-24"
+updatedAt: "2026-04-24"
+author: "Gus Marquez"
+authorUrl: "https://www.linkedin.com/in/gustavoamarquez"
+authorSameAs:
+  - "https://www.linkedin.com/in/gustavoamarquez"
+tags:
+  - "mcp"
+  - "developer"
+  - "hosting"
+  - "cloudflare"
+  - "cloud"
+category: "cloud"
+focusKeyword: "MCP remote server hosting"
+draft: false
+cornerstone: false
+faqItems:
+  - question: "What transport protocol do remote MCP servers use?"
+    answer: "Remote MCP servers use Streamable HTTP (the 2025 MCP specification default) or the older SSE transport. Stdio transport only works for local servers spawned directly by the AI client -- it cannot traverse a network."
+  - question: "How much does it cost to host an MCP server remotely?"
+    answer: "Cloudflare Workers free tier covers 100,000 requests per day, which handles most low-traffic servers at zero cost. Cloud Run charges per request-second with a 2-million-request free tier. Vercel Functions are included in the free hobby plan up to 100GB-hours of compute per month."
+  - question: "Can I host a stateful MCP server on Cloudflare Workers?"
+    answer: "Cloudflare Workers are stateless by design. For server-side state, use Cloudflare Durable Objects, KV storage, or an external database. Cloud Run and VPS deployments support in-memory state but lose it on restart."
+  - question: "How do I secure a remote MCP server?"
+    answer: "Add bearer token authentication to your HTTP transport layer. The MCP spec supports OAuth 2.1 for multi-user deployments. For single-user setups, a static API key in the Authorization header is the most common approach and sufficient for personal use."
+---
+
+Stdio MCP servers run as child processes of Claude Desktop on your local machine. That works for personal use but creates a hard limit: no other client can reach the server, and it goes offline whenever you close your laptop. Remote hosting removes that constraint by turning your MCP server into a persistent HTTPS endpoint that any authorized Claude client or agent framework can call. Understanding [what MCP servers are](/blog/what-is-mcp) is the foundation -- this guide focuses on where to run them at scale.
+
+The MCPFind [cloud category](/categories/cloud) indexes 158 MCP servers with an average of 61.87 GitHub stars, the second-highest average across all 21 categories in our directory of 7,245 servers. The top server in that category, Cloudflare's own [MCP server](/servers/com-cloudflare-mcp-mcp), sits at 3,566 stars -- a strong signal that Cloudflare Workers is the most validated remote hosting path in the MCP community today.
+
+## What Is the Difference Between stdio and Remote MCP Servers?
+
+Stdio transport connects the MCP client and server through stdin/stdout pipes. The client spawns the server process directly, which means both must run on the same machine. The server starts when the client launches and exits when the client closes. There is no network, no authentication, and no persistent state between sessions.
+
+Remote MCP servers use Streamable HTTP transport (the default in the 2025 MCP specification). The server runs as an independent HTTPS service. Clients connect by sending HTTP POST requests to the server's URL, and the server can maintain a session or respond statelessly. The key operational difference is that remote servers need authentication -- any HTTP client can reach the endpoint, so you need to verify the caller before executing tool calls. Remote hosting also means you can share one server across multiple clients, team members, or AI agents running in parallel without running multiple local instances.
+
+## How Do You Host an MCP Server on Cloudflare Workers?
+
+Cloudflare Workers is the most popular remote hosting option in the MCP directory, largely because Cloudflare published its own MCP server with full source code as a reference. Workers run JavaScript or TypeScript at the edge with zero cold starts, making tool call latency predictably low regardless of where the client is located.
+
+To deploy, install the Wrangler CLI and create a `wrangler.toml` config file:
+
+```toml
+name = "my-mcp-server"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+API_KEY = "your-api-key"
+```
+
+Your server entry point should use the `McpAgent` class from the `agents` package, which handles the Streamable HTTP transport wiring automatically. The free tier covers 100,000 requests per day, which handles most personal and small-team MCP deployments at zero cost. The main limitation is the Worker runtime: no persistent in-memory state, no background tasks running between requests, and a 128 MB memory cap per invocation. For stateful servers, use Durable Objects alongside your Worker.
+
+## How Do You Deploy an MCP Server to Google Cloud Run?
+
+Cloud Run is the best fit for MCP servers that need persistent memory, WebSocket connections, or longer execution times than serverless functions allow. It runs containerized workloads and scales to zero when idle.
+
+```bash
+# Build and push your container (see Docker guide for Dockerfile)
+docker build -t gcr.io/your-project/my-mcp-server .
+docker push gcr.io/your-project/my-mcp-server
+
+# Deploy
+gcloud run deploy my-mcp-server \
+  --image gcr.io/your-project/my-mcp-server \
+  --port 3000 \
+  --region us-central1 \
+  --allow-unauthenticated
+```
+
+The `--allow-unauthenticated` flag opens the endpoint publicly. For production, remove it and handle auth inside your server with a bearer token check on every request. Cloud Run charges per request-second with a two-million-request free tier monthly. Add `--min-instances=1` only if cold start latency (typically under one second) would break your use case. Our [Docker deployment guide](/blog/deploy-mcp-server-docker-guide) covers the Dockerfile setup that Cloud Run needs before you reach this step.
+
+## How Do You Host an MCP Server on Vercel?
+
+Vercel Functions work for stateless MCP servers that complete each tool call within a single HTTP request. The setup requires no container -- you push code and Vercel builds and deploys automatically from your Git repository.
+
+Create an `api/mcp.ts` file in your project. The Vercel adapter for the MCP TypeScript SDK handles routing:
+
+```typescript
+import { createServer } from '@vercel/mcp-adapter';
+import { myMcpServer } from '../src/server';
+
+export default createServer(myMcpServer);
+```
+
+Add `vercel.json` to configure the function runtime:
+
+```json
+{
+  "functions": {
+    "api/mcp.ts": {
+      "maxDuration": 800
+    }
+  }
+}
+```
+
+The free hobby plan includes up to 100 GB-hours of compute per month, which is generous for MCP servers handling dozens of daily tool calls. The hard constraint is the maximum function duration: 800 seconds on Pro plans. Long-running tools that stream large amounts of data or call slow external APIs may time out. For those cases, Cloud Run or a VPS is more appropriate.
+
+## How Do You Choose Between Cloudflare Workers, Cloud Run, and Vercel for MCP?
+
+The decision comes down to three factors: state requirements, latency sensitivity, and team size. For personal tools with no persistent state, Cloudflare Workers is the right default -- zero cold starts, generous free tier, and the most community examples to reference in the MCPFind [cloud category](/categories/cloud). For servers that maintain session state or call long-running external processes, Cloud Run gives you a full container with configurable memory and concurrency. For teams that already use Vercel for their web stack, the Vercel adapter is the fastest path to production because it slots into an existing deployment pipeline.
+
+The one pattern to avoid across all three: storing secrets in code or in environment variables baked into your container image. Use each platform's secret management -- Cloudflare Workers Secrets, Cloud Run Secret Manager integration, or Vercel Environment Variables -- and rotate them independently of deployments.
+
+## Frequently Asked Questions
+
+### What transport protocol do remote MCP servers use?
+
+Remote MCP servers use Streamable HTTP (the 2025 MCP specification default) or the older SSE transport. Stdio transport only works for local servers spawned directly by the AI client and cannot traverse a network.
+
+### How much does it cost to host an MCP server remotely?
+
+Cloudflare Workers free tier covers 100,000 requests per day, which handles most low-traffic servers at zero cost. Cloud Run charges per request-second with a two-million-request free tier. Vercel Functions are included in the free hobby plan up to 100 GB-hours of compute per month.
+
+### Can I host a stateful MCP server on Cloudflare Workers?
+
+Cloudflare Workers are stateless by design. For server-side state, use Cloudflare Durable Objects, KV storage, or an external database. Cloud Run and VPS deployments support in-memory state but lose it on restart.
+
+### How do I secure a remote MCP server?
+
+Add bearer token authentication to your HTTP transport layer. The MCP spec supports OAuth 2.1 for multi-user deployments. For single-user setups, a static API key in the Authorization header is the most common approach and sufficient for personal use.
