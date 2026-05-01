@@ -158,18 +158,28 @@ export const getTopServers = cache(
     )()
 );
 
-// Fetch a page of servers for sitemap generation (offset-based, no total count needed)
+// Fetch a page of servers for sitemap generation (offset-based, no total count needed).
+// Supabase caps each query at 1,000 rows, so we paginate internally in 1,000-row chunks
+// to return up to pageSize rows per sitemap batch.
 export const getServersSitemapPage = cache(
   (offset: number, pageSize: number): Promise<Pick<ServerListItem, 'slug' | 'updated_at'>[]> =>
     unstable_cache(
       async () => {
-        const { data } = await supabase
-          .from('servers')
-          .select('slug,updated_at')
-          .eq('registry_status', 'active')
-          .order('github_stars', { ascending: false })
-          .range(offset, offset + pageSize - 1);
-        return (data || []) as Pick<ServerListItem, 'slug' | 'updated_at'>[];
+        const SUPABASE_MAX = 1000;
+        const allRows: Pick<ServerListItem, 'slug' | 'updated_at'>[] = [];
+        for (let i = 0; i < pageSize; i += SUPABASE_MAX) {
+          const chunkSize = Math.min(SUPABASE_MAX, pageSize - i);
+          const { data } = await supabase
+            .from('servers')
+            .select('slug,updated_at')
+            .eq('registry_status', 'active')
+            .order('github_stars', { ascending: false })
+            .range(offset + i, offset + i + chunkSize - 1);
+          if (!data || data.length === 0) break;
+          allRows.push(...(data as Pick<ServerListItem, 'slug' | 'updated_at'>[]));
+          if (data.length < chunkSize) break;
+        }
+        return allRows;
       },
       ['servers-sitemap-page', String(offset), String(pageSize)],
       { tags: ['servers'], revalidate: 3600 }
