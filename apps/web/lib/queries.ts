@@ -158,6 +158,24 @@ export const getTopServers = cache(
     )()
 );
 
+// Fetch a page of servers for sitemap generation (offset-based, no total count needed)
+export const getServersSitemapPage = cache(
+  (offset: number, pageSize: number): Promise<Pick<ServerListItem, 'slug' | 'updated_at'>[]> =>
+    unstable_cache(
+      async () => {
+        const { data } = await supabase
+          .from('servers')
+          .select('slug,updated_at')
+          .eq('registry_status', 'active')
+          .order('github_stars', { ascending: false })
+          .range(offset, offset + pageSize - 1);
+        return (data || []) as Pick<ServerListItem, 'slug' | 'updated_at'>[];
+      },
+      ['servers-sitemap-page', String(offset), String(pageSize)],
+      { tags: ['servers'], revalidate: 3600 }
+    )()
+);
+
 // React cache() for request-level dedup; unstable_cache for cross-request persistence with tags.
 export const getServersByCategory = cache(
   (category: string): Promise<ServerListItem[]> =>
