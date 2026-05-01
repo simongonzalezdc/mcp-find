@@ -11,6 +11,7 @@ import { CodeBlock } from "@/components/ui/code-block";
 import { ReadmeSection } from "@/components/ui/readme-section";
 import { ServerCard } from "@/components/ui/server-card";
 import { formatNumber } from "@/components/ui/stat-badge";
+import { RelatedArticles } from "@/components/related-articles";
 import { Navbar } from "@/components/ui/navbar";
 import {
   IconArrowLeft,
@@ -288,6 +289,8 @@ export default async function ServerDetailPage({
                 </div>
               </section>
             )}
+            {/* Related Articles */}
+            <RelatedArticles serverCategory={server.category} />
           </div>
 
           {/* Right: Sidebar */}
