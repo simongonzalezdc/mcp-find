@@ -4,6 +4,20 @@ import type { Category } from '@mcpfind/shared';
 import type { Metadata } from 'next';
 
 export function generateServerJsonLd(server: ServerWithTools): object {
+  // Extract author/org name from GitHub URL (e.g. "https://github.com/org/repo" -> "org")
+  const githubAuthor = server.github_url
+    ? server.github_url.replace('https://github.com/', '').split('/')[0]
+    : undefined;
+
+  // Prefer registry published date, then our created_at
+  const dateCreated = server.registry_published_at || server.created_at;
+
+  // Best available modified date: github last push > registry updated > our updated_at
+  const dateModified =
+    server.github_last_push ||
+    server.registry_updated_at ||
+    server.updated_at;
+
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -13,15 +27,25 @@ export function generateServerJsonLd(server: ServerWithTools): object {
         description: server.description || '',
         url: `${SITE_URL}/servers/${server.slug}`,
         applicationCategory: 'DeveloperApplication',
-        operatingSystem: ['Windows', 'macOS', 'Linux'],
+        operatingSystem: 'Cross-platform',
         version: server.version || undefined,
         downloadUrl: server.package_url || undefined,
+        codeRepository: server.github_url || undefined,
         license: server.github_license
           ? `https://spdx.org/licenses/${server.github_license}`
           : undefined,
-        dateModified: server.github_last_push || server.updated_at,
-        creator: server.github_url
-          ? { '@type': 'Organization', url: server.github_url }
+        dateCreated: dateCreated || undefined,
+        dateModified: dateModified || undefined,
+        keywords:
+          server.registry_tags && server.registry_tags.length > 0
+            ? server.registry_tags.join(', ')
+            : undefined,
+        author: githubAuthor
+          ? {
+              '@type': 'Organization',
+              name: githubAuthor,
+              url: `https://github.com/${githubAuthor}`,
+            }
           : undefined,
         offers: {
           '@type': 'Offer',
