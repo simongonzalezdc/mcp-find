@@ -1,56 +1,6 @@
-import { getServersSitemapPage } from '@/lib/queries';
-import { SITE_URL } from '@mcpfind/shared';
-import { escapeXml } from '@/lib/escape-xml';
-import { notFound } from 'next/navigation';
-
-export const dynamic = 'force-dynamic';
-
-const BATCH_SIZE = 5000;
-const MAX_BATCHES = 10; // Safety cap — supports up to 50,000 servers
-
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ index: string }> }
-) {
-  const { index } = await params;
-  const batchIndex = parseInt(index, 10);
-
-  if (isNaN(batchIndex) || batchIndex < 0 || batchIndex >= MAX_BATCHES) {
-    notFound();
-  }
-
-  const offset = batchIndex * BATCH_SIZE;
-  const servers = await getServersSitemapPage(offset, BATCH_SIZE);
-
-  if (servers.length === 0 && batchIndex > 0) {
-    notFound();
-  }
-
-  const renderUrl = (slug: string, updatedAt: string | null) => {
-    let lastmodStr = '';
-    if (updatedAt) {
-      try {
-        lastmodStr = `\n    <lastmod>${new Date(updatedAt).toISOString().split('T')[0]}</lastmod>`;
-      } catch {
-        // Skip invalid dates
-      }
-    }
-    return `  <url>
-    <loc>${escapeXml(`${SITE_URL}/servers/${slug}`)}</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>${lastmodStr}
-  </url>`;
-  };
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${servers.map(s => renderUrl(s.slug, s.updated_at)).join('\n')}
-</urlset>`;
-
-  return new Response(xml, {
-    headers: {
-      'Content-Type': 'application/xml',
-      'Cache-Control': 'public, max-age=86400',
-    },
-  });
-}
+// DEPRECATED: Next.js App Router does not support dynamic [param] segments
+// in folder names that contain dots/periods (e.g. sitemap-servers-[index].xml).
+// This route never matched in production. Replaced by:
+//   apps/web/app/sitemap-servers-0.xml/route.ts
+//   apps/web/app/sitemap-servers-1.xml/route.ts
+// This file is kept to avoid breaking git history but is unreachable.
