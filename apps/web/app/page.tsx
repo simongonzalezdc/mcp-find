@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AuroraBackground } from "@/components/aceternity/aurora-background";
 import { ServerCard } from "@/components/ui/server-card";
@@ -43,6 +44,15 @@ import {
   IconShoppingCart,
   IconMapPin,
 } from "@tabler/icons-react";
+
+export const metadata: Metadata = {
+  title: "MCPFind — Open-Source MCP Server Directory",
+  description:
+    "Browse, search, and install 7,299+ MCP servers across 21 categories. One-click configs for Claude Desktop, Cursor, VS Code, Windsurf, and GitHub Copilot.",
+  alternates: {
+    canonical: "https://mcpfind.org",
+  },
+};
 
 const categoryIconMap: Record<string, React.ReactNode> = {
   databases: <IconDatabase size={20} className="text-blue-400" />,
