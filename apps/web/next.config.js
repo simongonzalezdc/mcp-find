@@ -1,6 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ["@mcpfind/shared"],
+  // Ensure blog MDX content and @vercel/og wasm files are bundled into
+  // the opengraph-image serverless function. Without this, Next.js file
+  // tracing misses dynamically-read files and the wasm assets, causing
+  // "failed to pipe res" 500s on Vercel.
+  outputFileTracingIncludes: {
+    '/blog/[slug]/opengraph-image': [
+      './content/blog/**/*.mdx',
+      './node_modules/.pnpm/**/next/dist/compiled/@vercel/og/*.wasm',
+      './node_modules/.pnpm/**/next/dist/compiled/@vercel/og/*.ttf',
+    ],
+  },
   images: {
     remotePatterns: [
       {
