@@ -3,4 +3,10 @@
 #
 # Required fields: name, github_url, package_name, description
 # Optional fields: package_type (npm|pypi|docker), category
-servers: []
+servers:
+  - name: "mcp-video"
+    github_url: "https://github.com/KyaniteLabs/mcp-video"
+    package_name: "mcp-video"
+    description: "AI-native video editing MCP server for trimming, merging, overlays, audio, subtitles, effects, and FFmpeg-backed workflows."
+    package_type: "pypi"
+    category: "other"
